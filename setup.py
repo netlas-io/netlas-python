@@ -7,7 +7,7 @@ DEPENDENCIES = open('requirements.txt', 'r').read().split('\n')
 
 setup(
     name="netlas",
-    version="0.0.4",
+    version="0.0.1",
     author="Netlas.IO",
     author_email="support@netlas.io",
     description="Netlas.IO API package",
