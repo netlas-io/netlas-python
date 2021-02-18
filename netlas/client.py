@@ -6,16 +6,16 @@ class Netlas:
     debug: bool = False
 
     def __init__(self, api_key: str,
-                 endpoint="https://app.netlas.io/api") -> None:
+                 apibase="https://app.netlas.io") -> None:
         self.api_key: str = api_key
-        self.endpoint: str = endpoint
+        self.apibase: str = apibase
 
-    def query(self, query: str) -> dict:
+    def _request(self, query: str, endpoint: str) -> dict:
         ret: dict = {}
         params = {'q': query, 'api_key': self.api_key}
         try:
             r = requests.get(
-                f"{self.endpoint}/search/", params=params)
+                f"{self.apibase}{endpoint}", params=params)
             response_data = json.loads(r.text)
         except json.JSONDecodeError:
             ret['error'] = "Failed to decode response data to JSON"
@@ -34,4 +34,16 @@ class Netlas:
             if self.debug:
                 ret['error_description'] = r.reason
                 ret['error_data'] = r.text
+        return ret
+
+    def query(self, query: str) -> dict:
+        ret = self._request(query=query, endpoint="/api/search/")
+        return ret
+
+    def count(self, query: str) -> dict:
+        ret = self._request(query=query, endpoint="/api/count/")
+        return ret
+
+    def stat(self, query: str) -> dict:
+        ret = self._request(query=query, endpoint="/api/stat/")
         return ret
