@@ -1,6 +1,8 @@
 import netlas
 import click
 import json
+from netlas.helpers import dump_object
+from netlas.exception import APIError
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
@@ -43,11 +45,12 @@ def main():
               show_default=True)
 def query(datatype, apikey, format, querystring, server):
     """Search query."""
-    ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-    query_res = ns_con.query(query=querystring,
-                             output_format=format,
-                             datatype=datatype)
-    print(query_res)
+    try:
+        ns_con = netlas.Netlas(api_key=apikey, apibase=server)
+        query_res = ns_con.query(query=querystring, datatype=datatype)
+        print(dump_object(data=query_res, format=format))
+    except APIError as ex:
+        print(ex)
 
 
 @main.command()
@@ -79,13 +82,14 @@ def query(datatype, apikey, format, querystring, server):
               help="Netlas API server",
               default="https://app.netlas.io",
               show_default=True)
-def count(datatype, apikey, querystring, server):
+def count(datatype, apikey, querystring, server, format):
     """Calculate count of query results."""
-    ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-    query_res = ns_con.count(query=querystring,
-                             output_format=format,
-                             datatype=datatype)
-    print(query_res)
+    try:
+        ns_con = netlas.Netlas(api_key=apikey, apibase=server)
+        query_res = ns_con.count(query=querystring, datatype=datatype)
+        print(dump_object(data=query_res, format=format))
+    except APIError as ex:
+        print(ex)
 
 
 @main.command()
@@ -109,11 +113,14 @@ def count(datatype, apikey, querystring, server):
               help="Netlas API server",
               default="https://app.netlas.io",
               show_default=True)
-def stat(apikey, querystring, server):
+def stat(apikey, querystring, server, format):
     """Get statistics for query."""
-    ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-    query_res = ns_con.stat(query=querystring, output_format=format)
-    print(query_res)
+    try:
+        ns_con = netlas.Netlas(api_key=apikey, apibase=server)
+        query_res = ns_con.stat(query=querystring)
+        print(dump_object(data=query_res, format=format))
+    except APIError as ex:
+        print(ex)
 
 
 @main.command()
@@ -125,16 +132,25 @@ def stat(apikey, querystring, server):
     prompt=True,
     hide_input=True,
 )
+@click.option("-f",
+              "--format",
+              help="Output format",
+              default="yaml",
+              type=click.Choice(['json', 'yaml'], case_sensitive=False),
+              show_default=True)
 @click.option("-s",
               "--server",
               help="Netlas API server",
               default="https://app.netlas.io",
               show_default=True)
-def profile(apikey, server):
+def profile(apikey, server, format):
     """Get user profile data."""
-    ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-    profile = ns_con.profile()
-    print(profile)
+    try:
+        ns_con = netlas.Netlas(api_key=apikey, apibase=server)
+        query_res = ns_con.profile()
+        print(dump_object(data=query_res, format=format))
+    except APIError as ex:
+        print(ex)
 
 
 @main.command()
@@ -167,10 +183,61 @@ def profile(apikey, server):
               default="https://app.netlas.io",
               show_default=True)
 def host(hosttype, apikey, format, host, server):
-    """Search query."""
-    ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-    query_res = ns_con.host(host=host, output_format=format, hosttype=hosttype)
-    print(query_res)
+    """Host (ip or domain) information"""
+    try:
+        ns_con = netlas.Netlas(api_key=apikey, apibase=server)
+        query_res = ns_con.host(host=host, hosttype=hosttype)
+        print(dump_object(data=query_res, format=format))
+    except APIError as ex:
+        print(ex)
+
+
+@main.command()
+@click.option(
+    "-a",
+    "--apikey",
+    help="User API key",
+    required=True,
+    prompt=True,
+    hide_input=True,
+)
+@click.option(
+    "-d",
+    "--datatype",
+    help="Query data type",
+    type=click.Choice(["uri", "cert", "domain"], case_sensitive=False),
+    default="uri",
+    show_default=True,
+)
+@click.option("-c",
+              "--count",
+              help="Count of results",
+              default=10,
+              show_default=True)
+@click.option("-o",
+              "--output_file",
+              help="Output file",
+              default="out.data",
+              show_default=True)
+@click.argument("querystring")
+@click.option("-s",
+              "--server",
+              help="Netlas API server",
+              default="https://app.netlas.io",
+              show_default=True)
+def download(apikey, querystring, server, output_file, datatype, count):
+    """Download data."""
+    try:
+        ns_con = netlas.Netlas(api_key=apikey, apibase=server)
+        query_res = ns_con.download(
+            query=querystring,
+            file_name=output_file,
+            datatype=datatype,
+            size=count,
+        )
+        print(dump_object(data=query_res, format="yaml"))
+    except APIError as ex:
+        print(ex)
 
 
 if __name__ == "__main__":

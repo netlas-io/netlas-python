@@ -1,2 +1,5 @@
-requests==2.25.1
-click==7.1.2
+requests>=2.12.5
+click>=7.0
+PyYAML>=3.13
+orjson>=3.0.0
+pygments>=2.5.0
