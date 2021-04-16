@@ -52,3 +52,6 @@ venv.bak/
 
 # IDE
 .vscode/
+
+# data
+*.data

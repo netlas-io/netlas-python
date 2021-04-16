@@ -1,6 +1,7 @@
 import netlas
 import click
 import json
+import tqdm
 from netlas.helpers import dump_object
 from netlas.exception import APIError
 
@@ -19,8 +20,8 @@ def main():
     "-d",
     "--datatype",
     help="Query data type",
-    type=click.Choice(["uri", "cert", "domain"], case_sensitive=False),
-    default="uri",
+    type=click.Choice(["response", "cert", "domain"], case_sensitive=False),
+    default="response",
     show_default=True,
 )
 @click.option(
@@ -58,8 +59,8 @@ def query(datatype, apikey, format, querystring, server):
     "-d",
     "--datatype",
     help="Query data type",
-    type=click.Choice(["uri", "cert", "domain"], case_sensitive=False),
-    default="uri",
+    type=click.Choice(["response", "cert", "domain"], case_sensitive=False),
+    default="response",
     show_default=True,
 )
 @click.option(
@@ -205,8 +206,8 @@ def host(hosttype, apikey, format, host, server):
     "-d",
     "--datatype",
     help="Query data type",
-    type=click.Choice(["uri", "cert", "domain"], case_sensitive=False),
-    default="uri",
+    type=click.Choice(["response", "cert", "domain"], case_sensitive=False),
+    default="response",
     show_default=True,
 )
 @click.option("-c",
@@ -218,6 +219,7 @@ def host(hosttype, apikey, format, host, server):
               "--output_file",
               help="Output file",
               default="out.data",
+              type=click.File('wb'),
               show_default=True)
 @click.argument("querystring")
 @click.option("-s",
@@ -225,17 +227,17 @@ def host(hosttype, apikey, format, host, server):
               help="Netlas API server",
               default="https://app.netlas.io",
               show_default=True)
-def download(apikey, querystring, server, output_file, datatype, count):
+def download(apikey, datatype, count, output_file, querystring, server):
     """Download data."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-        query_res = ns_con.download(
-            query=querystring,
-            file_name=output_file,
-            datatype=datatype,
-            size=count,
-        )
-        print(dump_object(data=query_res, format="yaml"))
+        for query_res in tqdm.tqdm(
+                ns_con.download(
+                    query=querystring,
+                    datatype=datatype,
+                    size=count,
+                )):
+            output_file.write(query_res)
     except APIError as ex:
         print(ex)
 
