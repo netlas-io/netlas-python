@@ -55,3 +55,6 @@ venv.bak/
 
 # data
 *.data
+_build
+_static
+_templates

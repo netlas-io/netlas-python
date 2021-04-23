@@ -1,9 +1,13 @@
 import yaml
 import json
 import pygments
+import orjson
 
+from requests import Request
 from pygments.lexers.data import YamlLexer
 from pygments.formatters.terminal import TerminalFormatter
+
+from netlas.exception import APIError
 
 
 class bcolors:
@@ -28,3 +32,16 @@ def dump_object(data, format: str = "json"):
                                   TerminalFormatter())
     else:
         return "Unknown output format"
+
+
+def check_status_code(request: Request, debug: bool = False, ret: dict = {}):
+    if request.status_code != 200:
+        try:
+            error_text = orjson.loads(request.text)
+            ret["error"] = error_text["error"]
+        except:
+            ret["error"] = f"{request.status_code}: {request.reason}"
+        if debug:
+            ret["error_description"] = request.reason
+            ret["error_data"] = request.text
+        raise APIError(ret['error'])

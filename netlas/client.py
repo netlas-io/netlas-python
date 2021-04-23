@@ -4,6 +4,7 @@ import yaml
 from io import TextIOWrapper
 
 from netlas.exception import APIError
+from netlas.helpers import check_status_code
 
 
 class Netlas:
@@ -51,6 +52,8 @@ class Netlas:
             if not self.api_key:
                 ret["error"] = "API key is empty"
                 raise APIError(ret['error'])
+            else:
+                params['api_key'] = self.api_key
 
             r = requests.get(f"{self.apibase}{endpoint}",
                              params=params,
@@ -67,14 +70,10 @@ class Netlas:
             if self.debug:
                 ret["error_description"] = r.reason
                 ret["error_data"] = r.text
-        if r.status_code != 200:
-            ret["error"] = f"{r.status_code}: {r.reason}"
-            if self.debug:
-                ret["error_description"] = r.reason
-                ret["error_data"] = r.text
 
         if ret.get('error', None):
             raise APIError(ret['error'])
+        check_status_code(request=r, debug=self.debug, ret=ret)
 
         ret = response_data
         return ret
@@ -98,19 +97,16 @@ class Netlas:
         if not self.api_key:
             ret["error"] = "API key is empty"
             raise APIError(ret['error'])
+        else:
+            params['api_key'] = self.api_key
         try:
             with requests.get(f"{self.apibase}{endpoint}",
                               params=params,
                               headers=self.headers,
                               verify=self.verify_ssl,
                               stream=True) as r:
+                check_status_code(request=r, debug=self.debug, ret=ret)
                 for chunk in r.iter_content(chunk_size=2048):
-                    if r.status_code != 200:
-                        ret["error"] = f"{r.status_code}: {r.reason}"
-                        if self.debug:
-                            ret["error_description"] = r.reason
-                            ret["error_data"] = r.text
-                        raise APIError(ret['error'])
                     #skip keep-alive chunks
                     if chunk:
                         yield chunk
@@ -121,13 +117,18 @@ class Netlas:
                 ret["error_data"] = r.text
             raise APIError(ret['error'])
 
-    def query(self, query: str, datatype: str = "response") -> dict:
+    def query(self,
+              query: str,
+              datatype: str = "response",
+              indices: str = "") -> dict:
         """Send search query to Netlas API
 
         :param query: Search query string
         :type query: str
         :param datatype: Data type (choises: response, cert, domain), defaults to "response"
         :type datatype: str, optional
+        :param indices: Comma-separated IDs of selected data indices (can be retrieved by `indices` method), defaults to ""
+        :type indices: str, optional
         :return: search query result
         :rtype: dict
         """
@@ -138,17 +139,25 @@ class Netlas:
             endpoint = "/api/domains/"
         ret = self._request(
             endpoint=endpoint,
-            params={"q": query},
+            params={
+                "q": query,
+                "indices": indices
+            },
         )
         return ret
 
-    def count(self, query: str, datatype: str = "response") -> dict:
+    def count(self,
+              query: str,
+              datatype: str = "response",
+              indices: str = "") -> dict:
         """Calculate total count of query string results
 
         :param query: Search query string
         :type query: str
         :param datatype: Data type (choises: response, cert, domain), defaults to "response"
         :type datatype: str, optional
+        :param indices: Comma-separated IDs of selected data indices (can be retrieved by `indices` method), defaults to ""
+        :type indices: str, optional
         :return: JSON object with total count of query string results
         :rtype: dict
         """
@@ -157,23 +166,29 @@ class Netlas:
             endpoint = "/api/certs_count/"
         elif datatype == "domain":
             endpoint = "/api/domains_count/"
-        ret = self._request(
-            endpoint=endpoint,
-            params={"q": query},
-        )
+        ret = self._request(endpoint=endpoint,
+                            params={
+                                "q": query,
+                                "indices": indices
+                            })
         return ret
 
-    def stat(self, query: str) -> dict:
+    def stat(self, query: str, indices: str = "") -> dict:
         """Get statistics of responses query string results
 
         :param query: Search query string
         :type query: str
+        :param indices: Comma-separated IDs of selected data indices (can be retrieved by `indices` method), defaults to ""
+        :type indices: str, optional
         :return: JSON object with statistics of responses query string results
         :rtype: dict
         """
         ret = self._request(
             endpoint="/api/responses_stat/",
-            params={"q": query},
+            params={
+                "q": query,
+                "indices": indices
+            },
         )
         return ret
 
@@ -187,13 +202,15 @@ class Netlas:
         ret = self._request(endpoint=endpoint)
         return ret
 
-    def host(self, host: str, hosttype: str = "ip") -> dict:
+    def host(self, host: str, hosttype: str = "ip", index: str = "") -> dict:
         """Get full information about host (ip or domain)
 
         :param host: IP or domain string
         :type host: str
         :param hosttype: `"ip"` or `"domain"`, defaults to "ip"
         :type hosttype: str, optional
+        :param index: ID of selected data indices (can be retrieved by `indices` method), defaults to ""
+        :type index: str, optional
         :return: JSON object with full information about host
         :rtype: dict
         """
@@ -202,14 +219,18 @@ class Netlas:
             endpoint = "/api/domain/"
         ret = self._request(
             endpoint=endpoint,
-            params={"q": host},
+            params={
+                "q": host,
+                "index": index
+            },
         )
         return ret
 
     def download(self,
                  query: str,
                  datatype: str = "response",
-                 size: int = 10) -> bytes:
+                 size: int = 10,
+                 indices: str = "") -> bytes:
         """Download data from Netlas
 
         :param query: Search query string
@@ -218,6 +239,8 @@ class Netlas:
         :type datatype: str, optional
         :param size: Download documents count, defaults to 10
         :type size: int, optional
+        :param indices: Comma-separated IDs of selected data indices (can be retrieved by `indices` method), defaults to ""
+        :type indices: str, optional
         :return: Iterator of raw data
         :rtype: Iterator[bytes]
         """
@@ -230,12 +253,18 @@ class Netlas:
                 endpoint=endpoint,
                 params={
                     "q": query,
-                    "size": size
+                    "size": size,
+                    "indices": indices
                 },
         ):
             yield ret
 
     def indices(self) -> list:
+        """Get available data indices
+
+        :return: List of available indices
+        :rtype: list
+        """
         endpoint = "/api/indices/"
         ret = self._request(endpoint=endpoint)
         return ret

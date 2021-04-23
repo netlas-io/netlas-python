@@ -44,14 +44,19 @@ def main():
               help="Netlas API server",
               default="https://app.netlas.io",
               show_default=True)
-def query(datatype, apikey, format, querystring, server):
+@click.option("-i",
+              "--indices",
+              help="Specify comma-separated data index collections")
+def query(datatype, apikey, format, querystring, server, indices):
     """Search query."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-        query_res = ns_con.query(query=querystring, datatype=datatype)
+        query_res = ns_con.query(query=querystring,
+                                 datatype=datatype,
+                                 indices=indices)
         print(dump_object(data=query_res, format=format))
     except APIError as ex:
-        print(ex)
+        print(dump_object(ex))
 
 
 @main.command()
@@ -83,7 +88,9 @@ def query(datatype, apikey, format, querystring, server):
               help="Netlas API server",
               default="https://app.netlas.io",
               show_default=True)
-@click.option("-i", "--indices", help="Specify data index collections")
+@click.option("-i",
+              "--indices",
+              help="Specify comma-separated data index collections")
 def count(datatype, apikey, querystring, server, format, indices):
     """Calculate count of query results."""
     try:
@@ -117,11 +124,14 @@ def count(datatype, apikey, querystring, server, format, indices):
               help="Netlas API server",
               default="https://app.netlas.io",
               show_default=True)
-def stat(apikey, querystring, server, format):
+@click.option("-i",
+              "--indices",
+              help="Specify comma-separated data index collections")
+def stat(apikey, querystring, server, format, indices):
     """Get statistics for query."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-        query_res = ns_con.stat(query=querystring)
+        query_res = ns_con.stat(query=querystring, indices=indices)
         print(dump_object(data=query_res, format=format))
     except APIError as ex:
         print(dump_object(ex))
@@ -186,11 +196,12 @@ def profile(apikey, server, format):
               help="Netlas API server",
               default="https://app.netlas.io",
               show_default=True)
-def host(hosttype, apikey, format, host, server):
+@click.option("-i", "--index", help="Specify data index collection")
+def host(hosttype, apikey, format, host, server, index):
     """Host (ip or domain) information"""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-        query_res = ns_con.host(host=host, hosttype=hosttype)
+        query_res = ns_con.host(host=host, hosttype=hosttype, index=index)
         print(dump_object(data=query_res, format=format))
     except APIError as ex:
         print(dump_object(ex))
@@ -230,19 +241,22 @@ def host(hosttype, apikey, format, host, server):
               help="Netlas API server",
               default="https://app.netlas.io",
               show_default=True)
-def download(apikey, datatype, count, output_file, querystring, server):
+@click.option("-i",
+              "--indices",
+              help="Specify comma-separated data index collections")
+def download(apikey, datatype, count, output_file, querystring, server,
+             indices):
     """Download data."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
         for query_res in tqdm.tqdm(
-                ns_con.download(
-                    query=querystring,
-                    datatype=datatype,
-                    size=count,
-                )):
+                ns_con.download(query=querystring,
+                                datatype=datatype,
+                                size=count,
+                                indices=indices)):
             output_file.write(query_res)
     except APIError as ex:
-        print(ex)
+        print(dump_object(ex))
 
 
 @main.command()
@@ -266,7 +280,7 @@ def download(apikey, datatype, count, output_file, querystring, server):
               default="https://app.netlas.io",
               show_default=True)
 def indices(apikey, server, format):
-    """Get user profile data."""
+    """Get available data indices."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
         query_res = ns_con.indices()
