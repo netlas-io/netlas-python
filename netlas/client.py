@@ -43,7 +43,9 @@ class Netlas:
         """
         ret: dict = {}
         try:
-            if self.api_key == "":
+            if self.api_key:
+                params['api_key'] = self.api_key
+            else:
                 ret["error"] = "API key is empty"
                 raise APIError(ret['error'])
 
@@ -93,6 +95,8 @@ class Netlas:
         if self.api_key == "":
             ret["error"] = "API key is empty"
             raise APIError(ret['error'])
+        else:
+            params['api_key'] = self.api_key
         try:
             with requests.get(f"{self.apibase}{endpoint}",
                               params=params,
@@ -133,10 +137,7 @@ class Netlas:
             endpoint = "/api/domains/"
         ret = self._request(
             endpoint=endpoint,
-            params={
-                "q": query,
-                "api_key": self.api_key
-            },
+            params={"q": query},
         )
         return ret
 
@@ -157,10 +158,7 @@ class Netlas:
             endpoint = "/api/domains_count/"
         ret = self._request(
             endpoint=endpoint,
-            params={
-                "q": query,
-                "api_key": self.api_key
-            },
+            params={"q": query},
         )
         return ret
 
@@ -174,10 +172,7 @@ class Netlas:
         """
         ret = self._request(
             endpoint="/api/responses_stat/",
-            params={
-                "q": query,
-                "api_key": self.api_key
-            },
+            params={"q": query},
         )
         return ret
 
@@ -187,8 +182,8 @@ class Netlas:
         :return: JSON object with user profile data
         :rtype: dict
         """
-        ret = self._request(endpoint="/api/users/profile/",
-                            params={"api_key": self.api_key})
+        endpoint = "/api/users/profile/"
+        ret = self._request(endpoint=endpoint)
         return ret
 
     def host(self, host: str, hosttype: str = "ip") -> dict:
@@ -206,10 +201,7 @@ class Netlas:
             endpoint = "/api/domain/"
         ret = self._request(
             endpoint=endpoint,
-            params={
-                "q": host,
-                "api_key": self.api_key
-            },
+            params={"q": host},
         )
         return ret
 
@@ -237,8 +229,12 @@ class Netlas:
                 endpoint=endpoint,
                 params={
                     "q": query,
-                    "size": size,
-                    "api_key": self.api_key
+                    "size": size
                 },
         ):
             yield ret
+
+    def indexes(self) -> list:
+        endpoint = "/api/indices/"
+        ret = self._request(endpoint=endpoint)
+        return ret

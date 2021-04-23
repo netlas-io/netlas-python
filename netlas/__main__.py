@@ -242,5 +242,35 @@ def download(apikey, datatype, count, output_file, querystring, server):
         print(ex)
 
 
+@main.command()
+@click.option(
+    "-a",
+    "--apikey",
+    help="User API key",
+    required=True,
+    prompt=True,
+    hide_input=True,
+)
+@click.option("-f",
+              "--format",
+              help="Output format",
+              default="yaml",
+              type=click.Choice(['json', 'yaml'], case_sensitive=False),
+              show_default=True)
+@click.option("-s",
+              "--server",
+              help="Netlas API server",
+              default="https://app.netlas.io",
+              show_default=True)
+def indexes(apikey, server, format):
+    """Get user profile data."""
+    try:
+        ns_con = netlas.Netlas(api_key=apikey, apibase=server)
+        query_res = ns_con.indexes()
+        print(dump_object(data=query_res, format=format))
+    except APIError as ex:
+        print(ex)
+
+
 if __name__ == "__main__":
     main()
