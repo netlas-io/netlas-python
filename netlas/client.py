@@ -187,7 +187,7 @@ class Netlas:
         :return: JSON object with user profile data
         :rtype: dict
         """
-        ret = self._request(endpoint="/api/profile/",
+        ret = self._request(endpoint="/api/users/profile/",
                             params={"api_key": self.api_key})
         return ret
 
