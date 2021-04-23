@@ -83,14 +83,17 @@ def query(datatype, apikey, format, querystring, server):
               help="Netlas API server",
               default="https://app.netlas.io",
               show_default=True)
-def count(datatype, apikey, querystring, server, format):
+@click.option("-i", "--indices", help="Specify data index collections")
+def count(datatype, apikey, querystring, server, format, indices):
     """Calculate count of query results."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-        query_res = ns_con.count(query=querystring, datatype=datatype)
+        query_res = ns_con.count(query=querystring,
+                                 datatype=datatype,
+                                 indices=indices)
         print(dump_object(data=query_res, format=format))
     except APIError as ex:
-        print(ex)
+        print(dump_object(ex))
 
 
 @main.command()
@@ -121,7 +124,7 @@ def stat(apikey, querystring, server, format):
         query_res = ns_con.stat(query=querystring)
         print(dump_object(data=query_res, format=format))
     except APIError as ex:
-        print(ex)
+        print(dump_object(ex))
 
 
 @main.command()
@@ -151,7 +154,7 @@ def profile(apikey, server, format):
         query_res = ns_con.profile()
         print(dump_object(data=query_res, format=format))
     except APIError as ex:
-        print(ex)
+        print(dump_object(ex))
 
 
 @main.command()
@@ -190,7 +193,7 @@ def host(hosttype, apikey, format, host, server):
         query_res = ns_con.host(host=host, hosttype=hosttype)
         print(dump_object(data=query_res, format=format))
     except APIError as ex:
-        print(ex)
+        print(dump_object(ex))
 
 
 @main.command()
@@ -266,10 +269,10 @@ def indices(apikey, server, format):
     """Get user profile data."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-        query_res = ns_con.indexes()
+        query_res = ns_con.indices()
         print(dump_object(data=query_res, format=format))
     except APIError as ex:
-        print(ex)
+        print(dump_object(ex))
 
 
 if __name__ == "__main__":
