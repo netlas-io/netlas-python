@@ -14,7 +14,7 @@ class Netlas:
         """Netlas class constructor
 
         :param api_key: Personal API key, defaults to ""
-        :type api_key: str, optional
+        :type api_key: str
         :param apibase: Netlas API server address, defaults to "https://app.netlas.io"
         :type apibase: str, optional
         :param debug: Debug flag, defaults to False
@@ -26,7 +26,12 @@ class Netlas:
         self.verify_ssl: bool = True
         if self.apibase != "https://app.netlas.io":
             self.verify_ssl = False
-        self.headers = {'Content-Type': 'application/json'}
+        self.headers = {
+            'Content-Type': 'application/json',
+            'X-Api-Key': self.api_key
+        }
+        if not self.api_key:
+            raise APIError({"error": "API key is empty"})
 
     def _request(self, endpoint: str = "/api/", params: object = {}) -> dict:
         """Private requests wrapper.
@@ -43,9 +48,7 @@ class Netlas:
         """
         ret: dict = {}
         try:
-            if self.api_key:
-                params['api_key'] = self.api_key
-            else:
+            if not self.api_key:
                 ret["error"] = "API key is empty"
                 raise APIError(ret['error'])
 
@@ -92,11 +95,9 @@ class Netlas:
         :rtype: Iterator[bytes]
         """
         ret: dict = {}
-        if self.api_key == "":
+        if not self.api_key:
             ret["error"] = "API key is empty"
             raise APIError(ret['error'])
-        else:
-            params['api_key'] = self.api_key
         try:
             with requests.get(f"{self.apibase}{endpoint}",
                               params=params,
@@ -234,7 +235,7 @@ class Netlas:
         ):
             yield ret
 
-    def indexes(self) -> list:
+    def indices(self) -> list:
         endpoint = "/api/indices/"
         ret = self._request(endpoint=endpoint)
         return ret

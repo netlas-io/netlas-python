@@ -262,7 +262,7 @@ def download(apikey, datatype, count, output_file, querystring, server):
               help="Netlas API server",
               default="https://app.netlas.io",
               show_default=True)
-def indexes(apikey, server, format):
+def indices(apikey, server, format):
     """Get user profile data."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
