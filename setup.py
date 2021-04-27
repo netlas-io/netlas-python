@@ -8,12 +8,12 @@ DEPENDENCIES = open("requirements.txt", "r").read().split("\n")
 setup(
     name="netlas",
     version="0.1.0",
-    author="Netlas.IO",
+    author="Netlas Team",
     author_email="support@netlas.io",
-    description="Netlas.IO API package",
+    description="Netlas.io API package",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/netlas-io/netlas",
+    url="https://github.com/netlas-io/netlas-python",
     packages=["netlas"],
     classifiers=[
         "Programming Language :: Python :: 3",
