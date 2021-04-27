@@ -27,12 +27,12 @@ class Netlas:
         self.verify_ssl: bool = True
         if self.apibase != "https://app.netlas.io":
             self.verify_ssl = False
+        if not self.api_key:
+            raise APIError({"error": "API key is empty"})
         self.headers = {
             'Content-Type': 'application/json',
             'X-Api-Key': self.api_key
         }
-        if not self.api_key:
-            raise APIError({"error": "API key is empty"})
 
     def _request(self, endpoint: str = "/api/", params: object = {}) -> dict:
         """Private requests wrapper.
@@ -52,8 +52,6 @@ class Netlas:
             if not self.api_key:
                 ret["error"] = "API key is empty"
                 raise APIError(ret['error'])
-            else:
-                params['api_key'] = self.api_key
 
             r = requests.get(f"{self.apibase}{endpoint}",
                              params=params,
@@ -97,8 +95,6 @@ class Netlas:
         if not self.api_key:
             ret["error"] = "API key is empty"
             raise APIError(ret['error'])
-        else:
-            params['api_key'] = self.api_key
         try:
             with requests.get(f"{self.apibase}{endpoint}",
                               params=params,
