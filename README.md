@@ -2,6 +2,22 @@
 
 This is a Netlas.io API package with CLI tool.
 
+## Installation
+
+Before using Python library for Netlas.io, get [API key](https://app.netlas.io/profile/).
+
+Installation:
+
+```
+$ pip install netlas
+```
+
+Or if you already have it installed and want to upgrade to the latest version:
+
+```
+$ pip install --upgrade netlas
+```
+
 ## API usage
 
 Simple Netlas API example. 
@@ -63,7 +79,7 @@ Options:
 Bases: `object`
 
 
-#### count(query: str, datatype: str = 'response')
+#### count(query: str, datatype: str = 'response', indices: str = '')
 Calculate total count of query string results
 
 
@@ -74,6 +90,9 @@ Calculate total count of query string results
 
 
     * **datatype** (*str**, **optional*) – Data type (choises: response, cert, domain), defaults to “response”
+
+
+    * **indices** (*str**, **optional*) – Comma-separated IDs of selected data indices (can be retrieved by indices method), defaults to “”
 
 
 
@@ -89,7 +108,7 @@ Calculate total count of query string results
 
 
 
-#### download(query: str, datatype: str = 'response', size: int = 10)
+#### download(query: str, datatype: str = 'response', size: int = 10, indices: str = '')
 Download data from Netlas
 
 
@@ -105,6 +124,9 @@ Download data from Netlas
     * **size** (*int**, **optional*) – Download documents count, defaults to 10
 
 
+    * **indices** (*str**, **optional*) – Comma-separated IDs of selected data indices (can be retrieved by indices method), defaults to “”
+
+
 
 * **Returns**
 
@@ -118,7 +140,7 @@ Download data from Netlas
 
 
 
-#### host(host: str, hosttype: str = 'ip')
+#### host(host: str, hosttype: str = 'ip', index: str = '')
 Get full information about host (ip or domain)
 
 
@@ -131,6 +153,9 @@ Get full information about host (ip or domain)
     * **hosttype** (*str**, **optional*) – “ip” or “domain”, defaults to “ip”
 
 
+    * **index** (*str**, **optional*) – ID of selected data indices (can be retrieved by indices method), defaults to “”
+
+
 
 * **Returns**
 
@@ -141,6 +166,22 @@ Get full information about host (ip or domain)
 * **Return type**
 
     dict
+
+
+
+#### indices()
+Get available data indices
+
+
+* **Returns**
+
+    List of available indices
+
+
+
+* **Return type**
+
+    list
 
 
 
@@ -160,7 +201,7 @@ Get user profile data
 
 
 
-#### query(query: str, datatype: str = 'response')
+#### query(query: str, datatype: str = 'response', indices: str = '')
 Send search query to Netlas API
 
 
@@ -171,6 +212,9 @@ Send search query to Netlas API
 
 
     * **datatype** (*str**, **optional*) – Data type (choises: response, cert, domain), defaults to “response”
+
+
+    * **indices** (*str**, **optional*) – Comma-separated IDs of selected data indices (can be retrieved by indices method), defaults to “”
 
 
 
@@ -186,13 +230,17 @@ Send search query to Netlas API
 
 
 
-#### stat(query: str)
+#### stat(query: str, indices: str = '')
 Get statistics of responses query string results
 
 
 * **Parameters**
 
-    **query** (*str*) – Search query string
+    
+    * **query** (*str*) – Search query string
+
+
+    * **indices** (*str**, **optional*) – Comma-separated IDs of selected data indices (can be retrieved by indices method), defaults to “”
 
 
 
@@ -207,4 +255,10 @@ Get statistics of responses query string results
     dict
 
 
-## Module contents
+## Exception
+
+
+### exception netlas.exception.APIError(value)
+Bases: `Exception`
+
+Basic Netlas.io Exception class
