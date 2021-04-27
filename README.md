@@ -2,6 +2,8 @@
 
 This is a Netlas.io API package with CLI tool.
 
+[Documentation](https://netlas-python.readthedocs.io/)
+
 ## Installation
 
 Before using Python library for Netlas.io, get [API key](https://app.netlas.io/profile/).
@@ -26,13 +28,11 @@ Send query `port:7001` to retrieve all responses available in Netlas.io with por
 ```
 import netlas
 
-out_format = "yaml"
 apikey = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-datatype = "response"
 
 netlas_connection = netlas.Netlas(api_key=apikey)
-query_res = netlas_connection.query(query="port:7001", datatype=datatype)
-print(netlas.helpers.dump_object(data=query_res, format=format))
+query_res = netlas_connection.query(query="port:7001")
+print(netlas.helpers.dump_object(data=query_res))
 ```
 
 ## CLI usage
@@ -49,6 +49,7 @@ Commands:
   count     Calculate count of query results.
   download  Download data.
   host      Host (ip or domain) information
+  indices   Get available data indices.
   profile   Get user profile data.
   query     Search query.
   stat      Get statistics for query.
@@ -62,12 +63,15 @@ Usage: netlas query [OPTIONS] QUERYSTRING
   Search query.
 
 Options:
-  -d, --datatype [uri|cert|domain]
-                                  Query data type  [default: uri]
+  -d, --datatype [response|cert|domain]
+                                  Query data type  [default: response]
   -a, --apikey TEXT               User API key  [required]
   -f, --format [json|yaml]        Output format  [default: yaml]
   -s, --server TEXT               Netlas API server  [default:
                                   https://app.netlas.io]
+
+  -i, --indices TEXT              Specify comma-separated data index
+                                  collections
 
   -h, --help                      Show this message and exit.
 ```

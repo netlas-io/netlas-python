@@ -44,7 +44,6 @@ Show global help:
 
 .. code-block:: bash
 	
-    user@pc:~$ netlas --help
     Usage: netlas [OPTIONS] COMMAND [ARGS]...
 
     Options:
@@ -54,6 +53,7 @@ Show global help:
     count     Calculate count of query results.
     download  Download data.
     host      Host (ip or domain) information
+    indices   Get available data indices.
     profile   Get user profile data.
     query     Search query.
     stat      Get statistics for query.
@@ -69,11 +69,14 @@ Show specific command help:
     Search query.
 
     Options:
-    -d, --datatype [uri|cert|domain]
-                                    Query data type  [default: uri]
+    -d, --datatype [response|cert|domain]
+                                    Query data type  [default: response]
     -a, --apikey TEXT               User API key  [required]
     -f, --format [json|yaml]        Output format  [default: yaml]
     -s, --server TEXT               Netlas API server  [default:
                                     https://app.netlas.io]
+
+    -i, --indices TEXT              Specify comma-separated data index
+                                    collections
 
     -h, --help                      Show this message and exit.
