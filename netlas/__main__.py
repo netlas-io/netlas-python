@@ -47,12 +47,14 @@ def main():
 @click.option("-i",
               "--indices",
               help="Specify comma-separated data index collections")
-def query(datatype, apikey, format, querystring, server, indices):
+@click.option("-p", "--page", type=int, help="Specify data page")
+def query(datatype, apikey, format, querystring, server, indices, page):
     """Search query."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
         query_res = ns_con.query(query=querystring,
                                  datatype=datatype,
+                                 page=page,
                                  indices=indices)
         print(dump_object(data=query_res, format=format))
     except APIError as ex:
@@ -249,12 +251,21 @@ def download(apikey, datatype, count, output_file, querystring, server,
     """Download data."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-        for query_res in tqdm.tqdm(
+        c_bytes: int = 0
+        for i, query_res in enumerate(
                 ns_con.download(query=querystring,
                                 datatype=datatype,
                                 size=count,
                                 indices=indices)):
+            if i > 0:
+                output_file.write(b'\n')
             output_file.write(query_res)
+            c_bytes += len(query_res)
+            print(f"{c_bytes} bytes has been written to {output_file.name}",
+                  end="\r")
+            import time
+            time.sleep(0.5)
+        print("\n")
     except APIError as ex:
         print(dump_object(ex))
 

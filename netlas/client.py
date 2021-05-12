@@ -96,13 +96,15 @@ class Netlas:
             ret["error"] = "API key is empty"
             raise APIError(ret['error'])
         try:
-            with requests.get(f"{self.apibase}{endpoint}",
-                              params=params,
-                              headers=self.headers,
-                              verify=self.verify_ssl,
-                              stream=True) as r:
+            with requests.get(
+                    f"{self.apibase}{endpoint}",
+                    params=params,
+                    headers=self.headers,
+                    verify=self.verify_ssl,
+                    stream=True,
+            ) as r:
                 check_status_code(request=r, debug=self.debug, ret=ret)
-                for chunk in r.iter_content(chunk_size=2048):
+                for chunk in r.iter_lines():
                     #skip keep-alive chunks
                     if chunk:
                         yield chunk
@@ -116,6 +118,7 @@ class Netlas:
     def query(self,
               query: str,
               datatype: str = "response",
+              page: int = 0,
               indices: str = "") -> dict:
         """Send search query to Netlas API
 
@@ -123,6 +126,8 @@ class Netlas:
         :type query: str
         :param datatype: Data type (choises: response, cert, domain), defaults to "response"
         :type datatype: str, optional
+        :param page: Page number of data, defaults to 0
+        :type page: int, optional
         :param indices: Comma-separated IDs of selected data indices (can be retrieved by `indices` method), defaults to ""
         :type indices: str, optional
         :return: search query result
@@ -137,7 +142,8 @@ class Netlas:
             endpoint=endpoint,
             params={
                 "q": query,
-                "indices": indices
+                "indices": indices,
+                "skip": page * 20,
             },
         )
         return ret
@@ -250,7 +256,8 @@ class Netlas:
                 params={
                     "q": query,
                     "size": size,
-                    "indices": indices
+                    "indices": indices,
+                    "raw": True
                 },
         ):
             yield ret
