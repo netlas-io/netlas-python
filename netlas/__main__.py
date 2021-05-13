@@ -47,7 +47,12 @@ def main():
 @click.option("-i",
               "--indices",
               help="Specify comma-separated data index collections")
-@click.option("-p", "--page", type=int, help="Specify data page")
+@click.option("-p",
+              "--page",
+              type=int,
+              default=0,
+              show_default=True,
+              help="Specify data page")
 def query(datatype, apikey, format, querystring, server, indices, page):
     """Search query."""
     try:

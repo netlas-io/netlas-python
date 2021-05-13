@@ -140,7 +140,7 @@ class Netlas:
             params={
                 "q": query,
                 "indices": indices,
-                "skip": page * 20,
+                "start": page * 20,
             },
         )
         return ret
