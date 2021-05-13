@@ -42,6 +42,6 @@ def check_status_code(request: Request, debug: bool = False, ret: dict = {}):
         except:
             ret["error"] = f"{request.status_code}: {request.reason}"
         if debug:
-            ret["error_description"] = request.reason
-            ret["error_data"] = request.text
+            ret["error"] += "\nDescription: " + request.reason
+            ret["error"] += "\nData: " + request.text
         raise APIError(ret['error'])

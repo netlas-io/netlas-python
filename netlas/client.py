@@ -61,13 +61,13 @@ class Netlas:
         except orjson.JSONDecodeError:
             ret["error"] = "Failed to parse response data to JSON"
             if self.debug:
-                ret["error_description"] = r.reason
-                ret["error_data"] = r.text
+                ret["error"] += "\nDescription: " + r.reason
+                ret["error"] += "\nData: " + r.text
         except requests.HTTPError:
             ret["error"] = f"{r.status_code}: {r.reason}"
             if self.debug:
-                ret["error_description"] = r.reason
-                ret["error_data"] = r.text
+                ret["error"] += "\nDescription: " + r.reason
+                ret["error"] += "\nData: " + r.text
 
         if ret.get('error', None):
             raise APIError(ret['error'])
@@ -108,11 +108,8 @@ class Netlas:
                     #skip keep-alive chunks
                     if chunk:
                         yield chunk
-        except requests.HTTPError:
-            ret["error"] = f"{r.status_code}: {r.reason}"
-            if self.debug:
-                ret["error_description"] = r.reason
-                ret["error_data"] = r.text
+        except:
+            ret["error"] = f"Unexpected Stream error"
             raise APIError(ret['error'])
 
     def query(self,

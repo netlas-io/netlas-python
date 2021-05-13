@@ -263,8 +263,6 @@ def download(apikey, datatype, count, output_file, querystring, server,
             c_bytes += len(query_res)
             print(f"{c_bytes} bytes has been written to {output_file.name}",
                   end="\r")
-            import time
-            time.sleep(0.5)
         print("\n")
     except APIError as ex:
         print(dump_object(ex))
