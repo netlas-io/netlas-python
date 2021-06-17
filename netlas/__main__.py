@@ -231,6 +231,19 @@ def host(hosttype, apikey, format, host, server, index):
     default="response",
     show_default=True,
 )
+@click.option(
+    "-f",
+    "--fields",
+    help="Comma-separated list of fields to include/exclude",
+)
+@click.option(
+    "-st",
+    "--source_type",
+    help="Include or exclude fields",
+    type=click.Choice(["include", "exclude"], case_sensitive=False),
+    default="exclude",
+    show_default=True,
+)
 @click.option("-c",
               "--count",
               help="Count of results",
@@ -252,7 +265,7 @@ def host(hosttype, apikey, format, host, server, index):
               "--indices",
               help="Specify comma-separated data index collections")
 def download(apikey, datatype, count, output_file, querystring, server,
-             indices):
+             indices, fields, source_type):
     """Download data."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
@@ -261,7 +274,9 @@ def download(apikey, datatype, count, output_file, querystring, server,
                 ns_con.download(query=querystring,
                                 datatype=datatype,
                                 size=count,
-                                indices=indices)):
+                                indices=indices,
+                                fields=fields,
+                                source_type=source_type)):
             if i > 0:
                 output_file.write(b'\n')
             output_file.write(query_res)

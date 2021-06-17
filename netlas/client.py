@@ -96,9 +96,9 @@ class Netlas:
             ret["error"] = "API key is empty"
             raise APIError(ret['error'])
         try:
-            with requests.get(
+            with requests.post(
                     f"{self.apibase}{endpoint}",
-                    params=params,
+                    json=params,
                     headers=self.headers,
                     verify=self.verify_ssl,
                     stream=True,
@@ -225,21 +225,29 @@ class Netlas:
         )
         return ret
 
-    def download(self,
-                 query: str,
-                 datatype: str = "response",
-                 size: int = 10,
-                 indices: str = "") -> bytes:
+    def download(
+                self,
+                query: str,
+                fields: list = list(),
+                source_type: str = "include",
+                datatype: str = "response",
+                size: int = 10,
+                indices: str = "",
+    ) -> bytes:
         """Download data from Netlas
 
         :param query: Search query string
         :type query: str
-        :param datatype: Data type (choises: response, cert, domain), defaults to "response"
+        :param fields:Comma-separated list of fields to include/exclude, defaults to []
+        :type fields: list
+        :param source_type: Include or exclude fields (choices: include, exclude), defaults to "include"
+        :type source_type: str
+        :param datatype: Data type (choices: response, cert, domain), defaults to "response"
         :type datatype: str, optional
         :param size: Download documents count, defaults to 10
         :type size: int, optional
         :param indices: Comma-separated IDs of selected data indices (can be retrieved by `indices` method), defaults to ""
-        :type indices: str, optional
+        :type indices: list, optional
         :return: Iterator of raw data
         :rtype: Iterator[bytes]
         """
@@ -248,13 +256,18 @@ class Netlas:
             endpoint = "/api/certs/download/"
         elif datatype == "domain":
             endpoint = "/api/domains/download/"
+
+        fields = list() if not fields else fields.split(",")
+
         for ret in self._stream_request(
                 endpoint=endpoint,
                 params={
                     "q": query,
                     "size": size,
                     "indices": indices,
-                    "raw": True
+                    "raw": True,
+                    "fields": fields,
+                    "source_type": source_type,
                 },
         ):
             yield ret
