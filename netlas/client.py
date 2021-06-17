@@ -238,7 +238,7 @@ class Netlas:
 
         :param query: Search query string
         :type query: str
-        :param fields:Comma-separated list of fields to include/exclude, defaults to []
+        :param fields: Comma-separated list of fields to include/exclude, defaults to []
         :type fields: list
         :param source_type: Include or exclude fields (choices: include, exclude), defaults to "include"
         :type source_type: str
