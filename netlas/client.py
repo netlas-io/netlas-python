@@ -257,8 +257,6 @@ class Netlas:
         elif datatype == "domain":
             endpoint = "/api/domains/download/"
 
-        fields = list() if not fields else fields.split(",")
-
         for ret in self._stream_request(
                 endpoint=endpoint,
                 params={

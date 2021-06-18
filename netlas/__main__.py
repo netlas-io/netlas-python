@@ -234,7 +234,7 @@ def host(hosttype, apikey, format, host, server, index):
 @click.option(
     "-f",
     "--fields",
-    help="Comma-separated list of fields to include/exclude",
+    help="Comma-separated data of fields to include/exclude",
 )
 @click.option(
     "-st",
@@ -270,6 +270,7 @@ def download(apikey, datatype, count, output_file, querystring, server,
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
         c_bytes: int = 0
+        fields = list() if not fields else fields.split(",")
         for i, query_res in enumerate(
                 ns_con.download(query=querystring,
                                 datatype=datatype,
