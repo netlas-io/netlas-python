@@ -50,13 +50,14 @@ Show global help:
     -h, --help  Show this message and exit.
 
     Commands:
-    count     Calculate count of query results.
-    download  Download data.
-    host      Host (ip or domain) information
-    indices   Get available data indices.
-    profile   Get user profile data.
-    query     Search query.
-    stat      Get statistics for query.
+        count     Calculate count of query results.
+        download  Download data.
+        host      Host (ip or domain) information
+        indices   Get available data indices.
+        profile   Get user profile data.
+        query     Search query.
+        savekey
+        stat      Get statistics for query.
 
 
 Show specific command help:

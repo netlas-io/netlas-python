@@ -52,6 +52,7 @@ Commands:
   indices   Get available data indices.
   profile   Get user profile data.
   query     Search query.
+  savekey
   stat      Get statistics for query.
 ```
 
