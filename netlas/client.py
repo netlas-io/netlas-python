@@ -201,38 +201,31 @@ class Netlas:
         ret = self._request(endpoint=endpoint)
         return ret
 
-    def host(self, host: str, hosttype: str = "ip", index: str = "") -> dict:
+    def host(self, host: str, fields: str = None) -> dict:
         """Get full information about host (ip or domain)
 
         :param host: IP or domain string
         :type host: str
-        :param hosttype: `"ip"` or `"domain"`, defaults to "ip"
-        :type hosttype: str, optional
-        :param index: ID of selected data indices (can be retrieved by `indices` method), defaults to ""
-        :type index: str, optional
+        :param fields: Comma-separated output fields. If empty it will output all data
+        :type fields: str, optional
         :return: JSON object with full information about host
         :rtype: dict
         """
-        endpoint = "/api/ip/"
-        if hosttype == "domain":
-            endpoint = "/api/domain/"
+        endpoint = f"/api/host/{host}" if host else "/api/host/"
         ret = self._request(
             endpoint=endpoint,
-            params={
-                "q": host,
-                "index": index
-            },
+            params={"fields": fields} if fields else {},
         )
         return ret
 
     def download(
-                self,
-                query: str,
-                fields: list = list(),
-                source_type: str = "include",
-                datatype: str = "response",
-                size: int = 10,
-                indices: str = "",
+        self,
+        query: str,
+        fields: list = list(),
+        source_type: str = "include",
+        datatype: str = "response",
+        size: int = 10,
+        indices: str = "",
     ) -> bytes:
         """Download data from Netlas
 

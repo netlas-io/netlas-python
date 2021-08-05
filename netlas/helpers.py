@@ -2,6 +2,8 @@ import yaml
 import json
 import pygments
 import orjson
+import appdirs
+import os
 
 from requests import Request
 from pygments.lexers.data import YamlLexer
@@ -45,3 +47,17 @@ def check_status_code(request: Request, debug: bool = False, ret: dict = {}):
             ret["error"] += "\nDescription: " + request.reason
             ret["error"] += "\nData: " + request.text
         raise APIError(ret['error'])
+
+
+def get_api_key():
+    key_file_name = "netlas.key"
+    key_file_path = f'{appdirs.user_config_dir(appname="netlas")}{os.path.sep}{key_file_name}'
+    try:
+        with open(key_file_path, 'r') as key_file:
+            api_key = key_file.readline()
+            api_key = api_key.strip()
+            if api_key.isalnum():
+                return api_key
+    except:
+        return None
+    return None
