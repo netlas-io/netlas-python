@@ -105,7 +105,7 @@ class Netlas:
             ) as r:
                 check_status_code(request=r, debug=self.debug, ret=ret)
                 for chunk in r.iter_lines():
-                    #skip keep-alive chunks
+                    # skip keep-alive chunks
                     if chunk:
                         yield chunk
         except:
@@ -172,20 +172,33 @@ class Netlas:
                             })
         return ret
 
-    def stat(self, query: str, indices: str = "") -> dict:
+    def stat(self, query: str,
+             group_fields: str,
+             indices: str = "",
+             size: int = 100,
+             index_type: str = "responses") -> dict:
         """Get statistics of responses query string results
 
         :param query: Search query string
         :type query: str
+        :param group_fields: Comma-separated fields using for aggregate data
+        :type group_fields: str
         :param indices: Comma-separated IDs of selected data indices (can be retrieved by `indices` method), defaults to ""
         :type indices: str, optional
+        :param size: Aggregation size, default 100
+        :type size: int
+        :param index_type: Index type (choises: responses, certificates, domains), defaults to "responses"
+        :type index_type: str
         :return: JSON object with statistics of responses query string results
         :rtype: dict
         """
         ret = self._request(
-            endpoint="/api/responses_stat/",
+            endpoint="/api/stat/",
             params={
                 "q": query,
+                "size": size,
+                "fields": group_fields,
+                "index_type": index_type,
                 "indices": indices
             },
         )

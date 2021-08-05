@@ -1,55 +1,36 @@
 ## Changelog
-#### v0.1.4-44555-g6977d737c.dev202108041700
---------------------------------------------
+#### v0.1.6 (2021-08-05)
+------------------------
 
 ##### Added
-- Save API key to local system.
+- New command `stat` - generate data statistics.
+
+
+#### v0.1.5 (2021-08-05)
+------------------------
+
+##### Changed
+- Updated interraction with the `host` API.
 
 
 #### v0.1.4 (2021-06-18)
 ------------------------
 
-##### Fix
-- Downloading using pip package.
-
-
-#### v0.1.3 (2021-06-17)
-------------------------
-
-##### Fix
-- Downloading by given query.
-
-
-#### v0.1.2 (2021-05-13)
-------------------------
-
 ##### Added
 - Pagination in query search.
-
-##### Changed
-- Raw stream downloading.
-
-
-#### v0.1.0 (2021-04-27)
-------------------------
-
-##### Added
 - Sphinx documentation configs.
 - Specify data index for search, count, etc.
 - Function and cli-command to retrieve available data indexes.
 
 ##### Changed
+- Raw stream downloading.
 - Migrate API key from GET parameter to HEADER.
 - Colored APIError exceptions.
 
 ##### Fix
+- Downloading via python lib.
+- Downloading by given query.
 - Updated profile endpoint.
-
-
-#### v0.0.2 (2021-02-18)
-------------------------
-
-##### Fix
 - Commit fix.
 - Bump2version config auto commit.
 

@@ -164,14 +164,31 @@ def count(datatype, apikey, querystring, server, format, indices):
               help="Netlas API server",
               default="https://app.netlas.io",
               show_default=True)
+@click.option("-g",
+              "--group_fields",
+              required=True,
+              help="Comma-separated fields using for aggregate data")
+@click.option("-l",
+              "--size",
+              default=100,
+              show_default=True,
+              help="Aggregation size")
+@click.option("-t",
+              "--index_type",
+              default="responses",
+              show_default=True,
+              type=click.Choice(['responses', 'certificates',
+                                'domains'], case_sensitive=False),
+              help="Index type")
 @click.option("-i",
               "--indices",
               help="Specify comma-separated data index collections")
-def stat(apikey, querystring, server, format, indices):
+def stat(apikey, querystring, server, format, indices, group_fields, size, index_type):
     """Get statistics for query."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-        query_res = ns_con.stat(query=querystring, indices=indices)
+        query_res = ns_con.stat(query=querystring, group_fields=group_fields,
+                                indices=indices, size=size, index_type=index_type)
         print(dump_object(data=query_res, format=format))
     except APIError as ex:
         print(dump_object(ex))
