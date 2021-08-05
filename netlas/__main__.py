@@ -23,6 +23,7 @@ def main():
               default="https://app.netlas.io",
               show_default=True)
 def savekey(api_key, server):
+    """Save API key to the local system."""
     config_path = appdirs.user_config_dir(appname="netlas")
     key_file = "netlas.key"
     if not os.path.isdir(config_path):
@@ -248,7 +249,7 @@ def profile(apikey, server, format):
               help="Comma-separated output fields. Default all fields",
               default=None)
 def host(apikey, format, host, server, fields):
-    """Host (ip or domain) information"""
+    """Host (ip or domain) information."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
         query_res = ns_con.host(host=host, fields=fields)
