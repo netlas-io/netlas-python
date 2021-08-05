@@ -52,11 +52,11 @@ Show global help:
     Commands:
         count     Calculate count of query results.
         download  Download data.
-        host      Host (ip or domain) information
+        host      Host (ip or domain) information.
         indices   Get available data indices.
         profile   Get user profile data.
         query     Search query.
-        savekey
+        savekey   Save API key to the local system.
         stat      Get statistics for query.
 
 
