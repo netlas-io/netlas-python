@@ -17,11 +17,13 @@ def main():
 
 @main.command()
 @click.argument("api_key")
-@click.option("-s",
-              "--server",
-              help="Netlas API server",
-              default="https://app.netlas.io",
-              show_default=True)
+@click.option(
+    "-s",
+    "--server",
+    help="Netlas API server",
+    default="https://app.netlas.io",
+    show_default=True,
+)
 def savekey(api_key, server):
     """Save API key to the local system."""
     config_path = appdirs.user_config_dir(appname="netlas")
@@ -65,21 +67,25 @@ def savekey(api_key, server):
     "-a",
     "--apikey",
     help="User API key (can be saved to system using command `netlas savekey`)",
-    required=True,
+    required=False,
     default=lambda: get_api_key(),
 )
-@click.option("-f",
-              "--format",
-              help="Output format",
-              default="yaml",
-              type=click.Choice(['json', 'yaml'], case_sensitive=False),
-              show_default=True)
+@click.option(
+    "-f",
+    "--format",
+    help="Output format",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+    show_default=True,
+)
 @click.argument("querystring")
-@click.option("-s",
-              "--server",
-              help="Netlas API server",
-              default="https://app.netlas.io",
-              show_default=True)
+@click.option(
+    "-s",
+    "--server",
+    help="Netlas API server",
+    default="https://app.netlas.io",
+    show_default=True,
+)
 @click.option("-i",
               "--indices",
               help="Specify comma-separated data index collections")
@@ -115,21 +121,25 @@ def query(datatype, apikey, format, querystring, server, indices, page):
     "-a",
     "--apikey",
     help="User API key (can be saved to system using command `netlas savekey`)",
-    required=True,
+    required=False,
     default=lambda: get_api_key(),
 )
-@click.option("-f",
-              "--format",
-              help="Output format",
-              default="yaml",
-              type=click.Choice(['json', 'yaml'], case_sensitive=False),
-              show_default=True)
+@click.option(
+    "-f",
+    "--format",
+    help="Output format",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+    show_default=True,
+)
 @click.argument("querystring")
-@click.option("-s",
-              "--server",
-              help="Netlas API server",
-              default="https://app.netlas.io",
-              show_default=True)
+@click.option(
+    "-s",
+    "--server",
+    help="Netlas API server",
+    default="https://app.netlas.io",
+    show_default=True,
+)
 @click.option("-i",
               "--indices",
               help="Specify comma-separated data index collections")
@@ -150,46 +160,60 @@ def count(datatype, apikey, querystring, server, format, indices):
     "-a",
     "--apikey",
     help="User API key (can be saved to system using command `netlas savekey`)",
-    required=True,
+    required=False,
     default=lambda: get_api_key(),
 )
-@click.option("-f",
-              "--format",
-              help="Output format",
-              default="yaml",
-              type=click.Choice(['json', 'yaml'], case_sensitive=False),
-              show_default=True)
+@click.option(
+    "-f",
+    "--format",
+    help="Output format",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+    show_default=True,
+)
 @click.argument("querystring")
-@click.option("-s",
-              "--server",
-              help="Netlas API server",
-              default="https://app.netlas.io",
-              show_default=True)
-@click.option("-g",
-              "--group_fields",
-              required=True,
-              help="Comma-separated fields using for aggregate data")
+@click.option(
+    "-s",
+    "--server",
+    help="Netlas API server",
+    default="https://app.netlas.io",
+    show_default=True,
+)
+@click.option(
+    "-g",
+    "--group_fields",
+    required=True,
+    help="Comma-separated fields using for aggregate data",
+)
 @click.option("-l",
               "--size",
               default=100,
               show_default=True,
               help="Aggregation size")
-@click.option("-t",
-              "--index_type",
-              default="responses",
-              show_default=True,
-              type=click.Choice(['responses', 'certificates',
-                                'domains'], case_sensitive=False),
-              help="Index type")
+@click.option(
+    "-t",
+    "--index_type",
+    default="responses",
+    show_default=True,
+    type=click.Choice(["responses", "certificates", "domains"],
+                      case_sensitive=False),
+    help="Index type",
+)
 @click.option("-i",
               "--indices",
               help="Specify comma-separated data index collections")
-def stat(apikey, querystring, server, format, indices, group_fields, size, index_type):
+def stat(apikey, querystring, server, format, indices, group_fields, size,
+         index_type):
     """Get statistics for query."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-        query_res = ns_con.stat(query=querystring, group_fields=group_fields,
-                                indices=indices, size=size, index_type=index_type)
+        query_res = ns_con.stat(
+            query=querystring,
+            group_fields=group_fields,
+            indices=indices,
+            size=size,
+            index_type=index_type,
+        )
         print(dump_object(data=query_res, format=format))
     except APIError as ex:
         print(dump_object(ex))
@@ -200,20 +224,24 @@ def stat(apikey, querystring, server, format, indices, group_fields, size, index
     "-a",
     "--apikey",
     help="User API key (can be saved to system using command `netlas savekey`)",
-    required=True,
+    required=False,
     default=lambda: get_api_key(),
 )
-@click.option("-f",
-              "--format",
-              help="Output format",
-              default="yaml",
-              type=click.Choice(['json', 'yaml'], case_sensitive=False),
-              show_default=True)
-@click.option("-s",
-              "--server",
-              help="Netlas API server",
-              default="https://app.netlas.io",
-              show_default=True)
+@click.option(
+    "-f",
+    "--format",
+    help="Output format",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+    show_default=True,
+)
+@click.option(
+    "-s",
+    "--server",
+    help="Netlas API server",
+    default="https://app.netlas.io",
+    show_default=True,
+)
 def profile(apikey, server, format):
     """Get user profile data."""
     try:
@@ -229,25 +257,31 @@ def profile(apikey, server, format):
     "-a",
     "--apikey",
     help="User API key (can be saved to system using command `netlas savekey`)",
-    required=True,
+    required=False,
     default=lambda: get_api_key(),
 )
-@click.option("-f",
-              "--format",
-              help="Output format",
-              default="yaml",
-              type=click.Choice(['json', 'yaml'], case_sensitive=False),
-              show_default=True)
+@click.option(
+    "-f",
+    "--format",
+    help="Output format",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+    show_default=True,
+)
 @click.argument("host", required=False, default=None)
-@click.option("-s",
-              "--server",
-              help="Netlas API server",
-              default="https://app.netlas.io",
-              show_default=True)
-@click.option("-l",
-              "--fields",
-              help="Comma-separated output fields. Default all fields",
-              default=None)
+@click.option(
+    "-s",
+    "--server",
+    help="Netlas API server",
+    default="https://app.netlas.io",
+    show_default=True,
+)
+@click.option(
+    "-l",
+    "--fields",
+    help="Comma-separated output fields. Default all fields",
+    default=None,
+)
 def host(apikey, format, host, server, fields):
     """Host (ip or domain) information."""
     try:
@@ -292,37 +326,52 @@ def host(apikey, format, host, server, fields):
               help="Count of results",
               default=10,
               show_default=True)
-@click.option("-o",
-              "--output_file",
-              help="Output file",
-              default="out.data",
-              type=click.File('wb'),
-              show_default=True)
+@click.option(
+    "-o",
+    "--output_file",
+    help="Output file",
+    default="out.data",
+    type=click.File("wb"),
+    show_default=True,
+)
 @click.argument("querystring")
-@click.option("-s",
-              "--server",
-              help="Netlas API server",
-              default="https://app.netlas.io",
-              show_default=True)
+@click.option(
+    "-s",
+    "--server",
+    help="Netlas API server",
+    default="https://app.netlas.io",
+    show_default=True,
+)
 @click.option("-i",
               "--indices",
               help="Specify comma-separated data index collections")
-def download(apikey, datatype, count, output_file, querystring, server,
-             indices, fields, source_type):
+def download(
+    apikey,
+    datatype,
+    count,
+    output_file,
+    querystring,
+    server,
+    indices,
+    fields,
+    source_type,
+):
     """Download data."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
         c_bytes: int = 0
         fields = list() if not fields else fields.split(",")
         for i, query_res in enumerate(
-                ns_con.download(query=querystring,
-                                datatype=datatype,
-                                size=count,
-                                indices=indices,
-                                fields=fields,
-                                source_type=source_type)):
+                ns_con.download(
+                    query=querystring,
+                    datatype=datatype,
+                    size=count,
+                    indices=indices,
+                    fields=fields,
+                    source_type=source_type,
+                )):
             if i > 0:
-                output_file.write(b'\n')
+                output_file.write(b"\n")
             output_file.write(query_res)
             c_bytes += len(query_res)
             print(f"{c_bytes} bytes has been written to {output_file.name}",
@@ -337,25 +386,75 @@ def download(apikey, datatype, count, output_file, querystring, server,
     "-a",
     "--apikey",
     help="User API key (can be saved to system using command `netlas savekey`)",
-    required=True,
+    required=False,
     default=lambda: get_api_key(),
 )
-@click.option("-f",
-              "--format",
-              help="Output format",
-              default="yaml",
-              type=click.Choice(['json', 'yaml'], case_sensitive=False),
-              show_default=True)
-@click.option("-s",
-              "--server",
-              help="Netlas API server",
-              default="https://app.netlas.io",
-              show_default=True)
+@click.option(
+    "-f",
+    "--format",
+    help="Output format",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+    show_default=True,
+)
+@click.option(
+    "-s",
+    "--server",
+    help="Netlas API server",
+    default="https://app.netlas.io",
+    show_default=True,
+)
 def indices(apikey, server, format):
     """Get available data indices."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
         query_res = ns_con.indices()
+        print(dump_object(data=query_res, format=format))
+    except APIError as ex:
+        print(dump_object(ex))
+
+
+@main.command()
+@click.option(
+    "-a",
+    "--apikey",
+    help="User API key (can be saved to system using command `netlas savekey`)",
+    required=False,
+    default=lambda: get_api_key(),
+)
+@click.option(
+    "-f",
+    "--format",
+    help="Output format",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+    show_default=True,
+)
+@click.argument("querystring")
+@click.option(
+    "-s",
+    "--server",
+    help="Netlas API server",
+    default="https://app.netlas.io",
+    show_default=True,
+)
+@click.option("-i",
+              "--indices",
+              help="Specify comma-separated data index collections")
+@click.option("-p",
+              "--page",
+              type=int,
+              default=0,
+              show_default=True,
+              help="Specify data page")
+def whois_ip(datatype, apikey, format, querystring, server, indices, page):
+    """Search query."""
+    try:
+        ns_con = netlas.Netlas(api_key=apikey, apibase=server)
+        query_res = ns_con.query(query=querystring,
+                                 datatype=datatype,
+                                 page=page,
+                                 indices=indices)
         print(dump_object(data=query_res, format=format))
     except APIError as ex:
         print(dump_object(ex))

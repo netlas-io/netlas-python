@@ -38,11 +38,20 @@ def dump_object(data, format: str = "json"):
 
 def check_status_code(request: Request, debug: bool = False, ret: dict = {}):
     if request.status_code != 200:
-        try:
-            error_text = orjson.loads(request.text)
-            ret["error"] = error_text["error"]
-        except:
-            ret["error"] = f"{request.status_code}: {request.reason}"
+        if request.status_code == 401:
+            ret["error"] = "Account required"
+        elif request.status_code == 402:
+            ret["error"] = "Insufficiently amount of Netlas Coins"
+        elif request.status_code == 403:
+            ret["error"] = "Account restrictions. Upgrade account to make this request"
+        elif request.status_code == 429:
+            ret["error"] = "Request limit"
+        else:
+            try:
+                error_text = orjson.loads(request.text)
+                ret["error"] = error_text["error"]
+            except:
+                ret["error"] = f"{request.status_code}: {request.reason}"
         if debug:
             ret["error"] += "\nDescription: " + request.reason
             ret["error"] += "\nData: " + request.text

@@ -8,10 +8,12 @@ from netlas.helpers import check_status_code
 
 
 class Netlas:
-    def __init__(self,
-                 api_key: str = "",
-                 apibase: str = "https://app.netlas.io",
-                 debug: bool = False) -> None:
+    def __init__(
+        self,
+        api_key: str = "",
+        apibase: str = "https://app.netlas.io",
+        debug: bool = False,
+    ) -> None:
         """Netlas class constructor
 
         :param api_key: Personal API key, defaults to ""
@@ -27,12 +29,7 @@ class Netlas:
         self.verify_ssl: bool = True
         if self.apibase != "https://app.netlas.io":
             self.verify_ssl = False
-        if not self.api_key:
-            raise APIError({"error": "API key is empty"})
-        self.headers = {
-            'Content-Type': 'application/json',
-            'X-Api-Key': self.api_key
-        }
+        self.headers = {"Content-Type": "application/json", "X-Api-Key": self.api_key}
 
     def _request(self, endpoint: str = "/api/", params: object = {}) -> dict:
         """Private requests wrapper.
@@ -49,14 +46,12 @@ class Netlas:
         """
         ret: dict = {}
         try:
-            if not self.api_key:
-                ret["error"] = "API key is empty"
-                raise APIError(ret['error'])
-
-            r = requests.get(f"{self.apibase}{endpoint}",
-                             params=params,
-                             headers=self.headers,
-                             verify=self.verify_ssl)
+            r = requests.get(
+                f"{self.apibase}{endpoint}",
+                params=params,
+                headers=self.headers,
+                verify=self.verify_ssl,
+            )
             response_data = orjson.loads(r.text)
         except orjson.JSONDecodeError:
             ret["error"] = "Failed to parse response data to JSON"
@@ -69,16 +64,14 @@ class Netlas:
                 ret["error"] += "\nDescription: " + r.reason
                 ret["error"] += "\nData: " + r.text
 
-        if ret.get('error', None):
-            raise APIError(ret['error'])
+        if ret.get("error", None):
+            raise APIError(ret["error"])
         check_status_code(request=r, debug=self.debug, ret=ret)
 
         ret = response_data
         return ret
 
-    def _stream_request(self,
-                        endpoint: str = "/api/",
-                        params: object = {}) -> bytes:
+    def _stream_request(self, endpoint: str = "/api/", params: object = {}) -> bytes:
         """Private stream requests wrapper.
         Sends a request to Netlas API endpoint and yield data from stream.
 
@@ -92,16 +85,13 @@ class Netlas:
         :rtype: Iterator[bytes]
         """
         ret: dict = {}
-        if not self.api_key:
-            ret["error"] = "API key is empty"
-            raise APIError(ret['error'])
         try:
             with requests.post(
-                    f"{self.apibase}{endpoint}",
-                    json=params,
-                    headers=self.headers,
-                    verify=self.verify_ssl,
-                    stream=True,
+                f"{self.apibase}{endpoint}",
+                json=params,
+                headers=self.headers,
+                verify=self.verify_ssl,
+                stream=True,
             ) as r:
                 check_status_code(request=r, debug=self.debug, ret=ret)
                 for chunk in r.iter_lines():
@@ -110,13 +100,11 @@ class Netlas:
                         yield chunk
         except:
             ret["error"] = f"Unexpected Stream error"
-            raise APIError(ret['error'])
+            raise APIError(ret["error"])
 
-    def query(self,
-              query: str,
-              datatype: str = "response",
-              page: int = 0,
-              indices: str = "") -> dict:
+    def query(
+        self, query: str, datatype: str = "response", page: int = 0, indices: str = ""
+    ) -> dict:
         """Send search query to Netlas API
 
         :param query: Search query string
@@ -145,10 +133,7 @@ class Netlas:
         )
         return ret
 
-    def count(self,
-              query: str,
-              datatype: str = "response",
-              indices: str = "") -> dict:
+    def count(self, query: str, datatype: str = "response", indices: str = "") -> dict:
         """Calculate total count of query string results
 
         :param query: Search query string
@@ -165,18 +150,17 @@ class Netlas:
             endpoint = "/api/certs_count/"
         elif datatype == "domain":
             endpoint = "/api/domains_count/"
-        ret = self._request(endpoint=endpoint,
-                            params={
-                                "q": query,
-                                "indices": indices
-                            })
+        ret = self._request(endpoint=endpoint, params={"q": query, "indices": indices})
         return ret
 
-    def stat(self, query: str,
-             group_fields: str,
-             indices: str = "",
-             size: int = 100,
-             index_type: str = "responses") -> dict:
+    def stat(
+        self,
+        query: str,
+        group_fields: str,
+        indices: str = "",
+        size: int = 100,
+        index_type: str = "responses",
+    ) -> dict:
         """Get statistics of responses query string results
 
         :param query: Search query string
@@ -199,7 +183,7 @@ class Netlas:
                 "size": size,
                 "fields": group_fields,
                 "index_type": index_type,
-                "indices": indices
+                "indices": indices,
             },
         )
         return ret
@@ -264,15 +248,15 @@ class Netlas:
             endpoint = "/api/domains/download/"
 
         for ret in self._stream_request(
-                endpoint=endpoint,
-                params={
-                    "q": query,
-                    "size": size,
-                    "indices": indices,
-                    "raw": True,
-                    "fields": fields,
-                    "source_type": source_type,
-                },
+            endpoint=endpoint,
+            params={
+                "q": query,
+                "size": size,
+                "indices": indices,
+                "raw": True,
+                "fields": fields,
+                "source_type": source_type,
+            },
         ):
             yield ret
 
