@@ -29,7 +29,8 @@ class Netlas:
         self.verify_ssl: bool = True
         if self.apibase != "https://app.netlas.io":
             self.verify_ssl = False
-        self.headers = {"Content-Type": "application/json", "X-Api-Key": self.api_key}
+        self.headers = {"Content-Type": "application/json",
+                        "X-Api-Key": self.api_key}
 
     def _request(self, endpoint: str = "/api/", params: object = {}) -> dict:
         """Private requests wrapper.
@@ -150,7 +151,8 @@ class Netlas:
             endpoint = "/api/certs_count/"
         elif datatype == "domain":
             endpoint = "/api/domains_count/"
-        ret = self._request(endpoint=endpoint, params={"q": query, "indices": indices})
+        ret = self._request(endpoint=endpoint, params={
+                            "q": query, "indices": indices})
         return ret
 
     def stat(
@@ -268,4 +270,29 @@ class Netlas:
         """
         endpoint = "/api/indices/"
         ret = self._request(endpoint=endpoint)
+        return ret
+
+    def whois_ip(
+        self, query: str, page: int = 0, indices: str = ""
+    ) -> dict:
+        """Get WHOIS IP by Netlas API
+
+        :param query: Search query string
+        :type query: str
+        :param page: Page number of data, defaults to 0
+        :type page: int, optional
+        :param indices: Comma-separated IDs of selected data indices (can be retrieved by `indices` method), defaults to ""
+        :type indices: str, optional
+        :return: whois query result
+        :rtype: dict
+        """
+        endpoint = "/api/whois_ip/"
+        ret = self._request(
+            endpoint=endpoint,
+            params={
+                "q": query,
+                "indices": indices,
+                "start": page * 20,
+            },
+        )
         return ret

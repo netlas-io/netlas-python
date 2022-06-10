@@ -447,14 +447,13 @@ def indices(apikey, server, format):
               default=0,
               show_default=True,
               help="Specify data page")
-def whois_ip(datatype, apikey, format, querystring, server, indices, page):
-    """Search query."""
+def whois_ip(apikey, format, querystring, server, indices, page):
+    """Get WHOIS IP data."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-        query_res = ns_con.query(query=querystring,
-                                 datatype=datatype,
-                                 page=page,
-                                 indices=indices)
+        query_res = ns_con.whois_ip(query=querystring,
+                                    page=page,
+                                    indices=indices)
         print(dump_object(data=query_res, format=format))
     except APIError as ex:
         print(dump_object(ex))
