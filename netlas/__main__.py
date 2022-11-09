@@ -58,7 +58,7 @@ def savekey(api_key, server):
     "-d",
     "--datatype",
     help="Query data type",
-    type=click.Choice(["response", "cert", "domain"], case_sensitive=False),
+    type=click.Choice(["response", "cert", "domain", "whois-ip", "whois-domain"], case_sensitive=False),
     default="response",
     show_default=True,
 )
@@ -405,93 +405,6 @@ def indices(apikey, server, format):
     except APIError as ex:
         print(dump_object(ex))
 
-
-@main.command()
-@click.option(
-    "-a",
-    "--apikey",
-    help="User API key (can be saved to system using command `netlas savekey`)",
-    required=False,
-    default=lambda: get_api_key(),
-)
-@click.option(
-    "-f",
-    "--format",
-    help="Output format",
-    default="yaml",
-    type=click.Choice(["json", "yaml"], case_sensitive=False),
-    show_default=True,
-)
-@click.argument("querystring")
-@click.option(
-    "--server",
-    help="Netlas API server",
-    default="https://app.netlas.io",
-    show_default=True,
-)
-@click.option("-i",
-              "--indices",
-              help="Specify comma-separated data index collections")
-@click.option("-p",
-              "--page",
-              type=int,
-              default=0,
-              show_default=True,
-              help="Specify data page")
-def whois_ip(apikey, format, querystring, server, indices, page):
-    """Get WHOIS IP data."""
-    try:
-        ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-        query_res = ns_con.whois_ip(query=querystring,
-                                    page=page,
-                                    indices=indices)
-        print(dump_object(data=query_res, format=format))
-    except APIError as ex:
-        print(dump_object(ex))
-
-
-@main.command()
-@click.option(
-    "-a",
-    "--apikey",
-    help="User API key (can be saved to system using command `netlas savekey`)",
-    required=False,
-    default=lambda: get_api_key(),
-)
-@click.option(
-    "-f",
-    "--format",
-    help="Output format",
-    default="yaml",
-    type=click.Choice(["json", "yaml"], case_sensitive=False),
-    show_default=True,
-)
-@click.argument("querystring")
-@click.option(
-    "--server",
-    help="Netlas API server",
-    default="https://app.netlas.io",
-    show_default=True,
-)
-@click.option("-i",
-              "--indices",
-              help="Specify comma-separated data index collections")
-@click.option("-p",
-              "--page",
-              type=int,
-              default=0,
-              show_default=True,
-              help="Specify data page")
-def whois_domain(apikey, format, querystring, server, indices, page):
-    """Get WHOIS DOMAIN data."""
-    try:
-        ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-        query_res = ns_con.whois_domain(query=querystring,
-                                        page=page,
-                                        indices=indices)
-        print(dump_object(data=query_res, format=format))
-    except APIError as ex:
-        print(dump_object(ex))
 
 if __name__ == "__main__":
     main()

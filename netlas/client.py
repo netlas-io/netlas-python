@@ -110,7 +110,7 @@ class Netlas:
 
         :param query: Search query string
         :type query: str
-        :param datatype: Data type (choises: response, cert, domain), defaults to "response"
+        :param datatype: Data type (choises: response, cert, domain, whois-ip, whois-domain), defaults to "response"
         :type datatype: str, optional
         :param page: Page number of data, defaults to 0
         :type page: int, optional
@@ -124,6 +124,10 @@ class Netlas:
             endpoint = "/api/certs/"
         elif datatype == "domain":
             endpoint = "/api/domains/"
+        elif datatype == "whois-ip":
+            endpoint = "/api/whois_ip/"
+        elif datatype == "whois-domain":
+            endpoint = "/api/whois_domains/"
         ret = self._request(
             endpoint=endpoint,
             params={
@@ -272,52 +276,3 @@ class Netlas:
         ret = self._request(endpoint=endpoint)
         return ret
 
-    def whois_ip(
-        self, query: str, page: int = 0, indices: str = ""
-    ) -> dict:
-        """Get WHOIS IP by Netlas API
-
-        :param query: Search query string
-        :type query: str
-        :param page: Page number of data, defaults to 0
-        :type page: int, optional
-        :param indices: Comma-separated IDs of selected data indices (can be retrieved by `indices` method), defaults to ""
-        :type indices: str, optional
-        :return: whois query result
-        :rtype: dict
-        """
-        endpoint = "/api/whois_ip/"
-        ret = self._request(
-            endpoint=endpoint,
-            params={
-                "q": query,
-                "indices": indices,
-                "start": page * 20,
-            },
-        )
-        return ret
-
-    def whois_domain(
-        self, query: str, page: int = 0, indices: str = ""
-    ) -> dict:
-        """Get WHOIS DOMAIN by Netlas API
-
-        :param query: Search query string
-        :type query: str
-        :param page: Page number of data, defaults to 0
-        :type page: int, optional
-        :param indices: Comma-separated IDs of selected data indices (can be retrieved by `indices` method), defaults to ""
-        :type indices: str, optional
-        :return: whois query result
-        :rtype: dict
-        """
-        endpoint = "/api/whois_domains/"
-        ret = self._request(
-            endpoint=endpoint,
-            params={
-                "q": query,
-                "indices": indices,
-                "start": page * 20,
-            },
-        )
-        return ret
