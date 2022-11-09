@@ -459,5 +459,49 @@ def whois_ip(apikey, format, querystring, server, indices, page):
         print(dump_object(ex))
 
 
+@main.command()
+@click.option(
+    "-a",
+    "--apikey",
+    help="User API key (can be saved to system using command `netlas savekey`)",
+    required=False,
+    default=lambda: get_api_key(),
+)
+@click.option(
+    "-f",
+    "--format",
+    help="Output format",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+    show_default=True,
+)
+@click.argument("querystring")
+@click.option(
+    "-s",
+    "--server",
+    help="Netlas API server",
+    default="https://app.netlas.io",
+    show_default=True,
+)
+@click.option("-i",
+              "--indices",
+              help="Specify comma-separated data index collections")
+@click.option("-p",
+              "--page",
+              type=int,
+              default=0,
+              show_default=True,
+              help="Specify data page")
+def whois_domain(apikey, format, querystring, server, indices, page):
+    """Get WHOIS DOMAIN data."""
+    try:
+        ns_con = netlas.Netlas(api_key=apikey, apibase=server)
+        query_res = ns_con.whois_domain(query=querystring,
+                                        page=page,
+                                        indices=indices)
+        print(dump_object(data=query_res, format=format))
+    except APIError as ex:
+        print(dump_object(ex))
+
 if __name__ == "__main__":
     main()

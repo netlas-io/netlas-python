@@ -296,3 +296,28 @@ class Netlas:
             },
         )
         return ret
+
+    def whois_domain(
+        self, query: str, page: int = 0, indices: str = ""
+    ) -> dict:
+        """Get WHOIS DOMAIN by Netlas API
+
+        :param query: Search query string
+        :type query: str
+        :param page: Page number of data, defaults to 0
+        :type page: int, optional
+        :param indices: Comma-separated IDs of selected data indices (can be retrieved by `indices` method), defaults to ""
+        :type indices: str, optional
+        :return: whois query result
+        :rtype: dict
+        """
+        endpoint = "/api/whois_domains/"
+        ret = self._request(
+            endpoint=endpoint,
+            params={
+                "q": query,
+                "indices": indices,
+                "start": page * 20,
+            },
+        )
+        return ret
