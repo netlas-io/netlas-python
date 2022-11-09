@@ -18,7 +18,6 @@ def main():
 @main.command()
 @click.argument("api_key")
 @click.option(
-    "-s",
     "--server",
     help="Netlas API server",
     default="https://app.netlas.io",
@@ -80,7 +79,6 @@ def savekey(api_key, server):
 )
 @click.argument("querystring")
 @click.option(
-    "-s",
     "--server",
     help="Netlas API server",
     default="https://app.netlas.io",
@@ -134,7 +132,6 @@ def query(datatype, apikey, format, querystring, server, indices, page):
 )
 @click.argument("querystring")
 @click.option(
-    "-s",
     "--server",
     help="Netlas API server",
     default="https://app.netlas.io",
@@ -173,7 +170,6 @@ def count(datatype, apikey, querystring, server, format, indices):
 )
 @click.argument("querystring")
 @click.option(
-    "-s",
     "--server",
     help="Netlas API server",
     default="https://app.netlas.io",
@@ -185,7 +181,7 @@ def count(datatype, apikey, querystring, server, format, indices):
     required=True,
     help="Comma-separated fields using for aggregate data",
 )
-@click.option("-l",
+@click.option("-s",
               "--size",
               default=100,
               show_default=True,
@@ -236,7 +232,6 @@ def stat(apikey, querystring, server, format, indices, group_fields, size,
     show_default=True,
 )
 @click.option(
-    "-s",
     "--server",
     help="Netlas API server",
     default="https://app.netlas.io",
@@ -270,7 +265,6 @@ def profile(apikey, server, format):
 )
 @click.argument("host", required=False, default=None)
 @click.option(
-    "-s",
     "--server",
     help="Netlas API server",
     default="https://app.netlas.io",
@@ -336,7 +330,6 @@ def host(apikey, format, host, server, fields):
 )
 @click.argument("querystring")
 @click.option(
-    "-s",
     "--server",
     help="Netlas API server",
     default="https://app.netlas.io",
@@ -398,7 +391,6 @@ def download(
     show_default=True,
 )
 @click.option(
-    "-s",
     "--server",
     help="Netlas API server",
     default="https://app.netlas.io",
@@ -432,7 +424,6 @@ def indices(apikey, server, format):
 )
 @click.argument("querystring")
 @click.option(
-    "-s",
     "--server",
     help="Netlas API server",
     default="https://app.netlas.io",
@@ -477,7 +468,6 @@ def whois_ip(apikey, format, querystring, server, indices, page):
 )
 @click.argument("querystring")
 @click.option(
-    "-s",
     "--server",
     help="Netlas API server",
     default="https://app.netlas.io",
