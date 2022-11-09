@@ -329,8 +329,8 @@ def host(apikey, format, host, server, fields):
 @click.option(
     "-o",
     "--output_file",
-    help="Output file",
-    default="out.data",
+    help="Output file (stdout by default)",
+    default="-",
     type=click.File("wb"),
     show_default=True,
 )
