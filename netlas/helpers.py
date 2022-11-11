@@ -4,6 +4,7 @@ import pygments
 import orjson
 import appdirs
 import os
+from click import Option, UsageError
 
 from requests import Request
 from pygments.lexers.data import YamlLexer
@@ -22,6 +23,35 @@ class bcolors:
     ENDC = '\033[0m'
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
+
+
+class MutuallyExclusiveOption(Option):
+    def __init__(self, *args, **kwargs):
+        self.mutually_exclusive = set(kwargs.pop('mutually_exclusive', []))
+        help = kwargs.get('help', '')
+        if self.mutually_exclusive:
+            ex_str = ', '.join(self.mutually_exclusive)
+            kwargs['help'] = help + (
+                ' NOTE: This argument is mutually exclusive with '
+                ' arguments: [' + ex_str + '].'
+            )
+        super(MutuallyExclusiveOption, self).__init__(*args, **kwargs)
+
+    def handle_parse_result(self, ctx, opts, args):
+        if self.mutually_exclusive.intersection(opts) and self.name in opts:
+            raise UsageError(
+                "Illegal usage: `{}` is mutually exclusive with "
+                "arguments `{}`.".format(
+                    self.name,
+                    ', '.join(self.mutually_exclusive)
+                )
+            )
+
+        return super(MutuallyExclusiveOption, self).handle_parse_result(
+            ctx,
+            opts,
+            args
+        )
 
 
 def dump_object(data, format: str = "json"):

@@ -104,7 +104,7 @@ class Netlas:
             raise APIError(ret["error"])
 
     def query(
-        self, query: str, datatype: str = "response", page: int = 0, indices: str = ""
+        self, query: str, datatype: str = "response", page: int = 0, indices: str = "", fields: str = None, exclude_fields: bool = False
     ) -> dict:
         """Send search query to Netlas API
 
@@ -116,6 +116,10 @@ class Netlas:
         :type page: int, optional
         :param indices: Comma-separated IDs of selected data indices (can be retrieved by `indices` method), defaults to ""
         :type indices: str, optional
+        :param fields: Comma-separated list of fields to include/exclude, default: all fields
+        :type fields: str
+        :param exclude_fields: Exclude fields from output (instead include), defaults to False
+        :type exclude_fields: bool
         :return: search query result
         :rtype: dict
         """
@@ -134,6 +138,8 @@ class Netlas:
                 "q": query,
                 "indices": indices,
                 "start": page * 20,
+                "fields": fields,
+                "source_type": "exclude" if exclude_fields else "include"
             },
         )
         return ret
@@ -200,11 +206,11 @@ class Netlas:
         :return: JSON object with user profile data
         :rtype: dict
         """
-        endpoint = "/api/users/profile/"
+        endpoint = "/api/users/current/"
         ret = self._request(endpoint=endpoint)
         return ret
 
-    def host(self, host: str, fields: str = None) -> dict:
+    def host(self, host: str, fields: str = None, exclude_fields: bool = False) -> dict:
         """Get full information about host (ip or domain)
 
         :param host: IP or domain string
@@ -217,15 +223,18 @@ class Netlas:
         endpoint = f"/api/host/{host}" if host else "/api/host/"
         ret = self._request(
             endpoint=endpoint,
-            params={"fields": fields} if fields else {},
+            params={
+                "fields": fields,
+                "source_type": "exclude" if exclude_fields else "include"
+            },
         )
         return ret
 
     def download(
         self,
         query: str,
-        fields: list = list(),
-        source_type: str = "include",
+        fields: str = None, 
+        exclude_fields: bool = False,
         datatype: str = "response",
         size: int = 10,
         indices: str = "",
@@ -234,10 +243,10 @@ class Netlas:
 
         :param query: Search query string
         :type query: str
-        :param fields: Comma-separated list of fields to include/exclude, defaults to []
-        :type fields: list
-        :param source_type: Include or exclude fields (choices: include, exclude), defaults to "include"
-        :type source_type: str
+        :param fields: Comma-separated list of fields to include/exclude, default: all fields
+        :type fields: str
+        :param exclude_fields: Exclude fields from output (instead include), defaults to False
+        :type exclude_fields: bool
         :param datatype: Data type (choices: response, cert, domain), defaults to "response"
         :type datatype: str, optional
         :param size: Download documents count, defaults to 10
@@ -261,7 +270,7 @@ class Netlas:
                 "indices": indices,
                 "raw": True,
                 "fields": fields,
-                "source_type": source_type,
+                "source_type": "exclude" if exclude_fields else "include",
             },
         ):
             yield ret

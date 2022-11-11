@@ -2,7 +2,7 @@ import netlas
 import click
 import appdirs
 import os
-from netlas.helpers import dump_object, get_api_key
+from netlas.helpers import MutuallyExclusiveOption, dump_object, get_api_key
 from netlas.exception import APIError
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
@@ -84,23 +84,36 @@ def savekey(api_key, server):
     default="https://app.netlas.io",
     show_default=True,
 )
-@click.option("-i",
-              "--indices",
+@click.option("--indices",
               help="Specify comma-separated data index collections")
+@click.option("-i",
+              "--include",
+              required=False,
+              cls=MutuallyExclusiveOption,
+              mutually_exclusive=["exclude", "-e"],
+              help="Specify comma-separated fields that will be in the output")
+@click.option("-e",
+              "--exclude",
+              required=False,
+              cls=MutuallyExclusiveOption,
+              mutually_exclusive=["include", "-i"],
+              help="Specify comma-separated fields that will be excluded from the output")
 @click.option("-p",
               "--page",
               type=int,
               default=0,
               show_default=True,
               help="Specify data page")
-def query(datatype, apikey, format, querystring, server, indices, page):
+def query(datatype, apikey, format, querystring, server, indices, include, exclude, page):
     """Search query."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
         query_res = ns_con.query(query=querystring,
                                  datatype=datatype,
                                  page=page,
-                                 indices=indices)
+                                 indices=indices,
+                                 fields=include if include else exclude,
+                                 exclude_fields=True if exclude else False)
         print(dump_object(data=query_res, format=format))
     except APIError as ex:
         print(dump_object(ex))
@@ -137,8 +150,7 @@ def query(datatype, apikey, format, querystring, server, indices, page):
     default="https://app.netlas.io",
     show_default=True,
 )
-@click.option("-i",
-              "--indices",
+@click.option("--indices",
               help="Specify comma-separated data index collections")
 def count(datatype, apikey, querystring, server, format, indices):
     """Calculate count of query results."""
@@ -195,8 +207,7 @@ def count(datatype, apikey, querystring, server, format, indices):
                       case_sensitive=False),
     help="Index type",
 )
-@click.option("-i",
-              "--indices",
+@click.option("--indices",
               help="Specify comma-separated data index collections")
 def stat(apikey, querystring, server, format, indices, group_fields, size,
          index_type):
@@ -270,17 +281,25 @@ def profile(apikey, server, format):
     default="https://app.netlas.io",
     show_default=True,
 )
-@click.option(
-    "-l",
-    "--fields",
-    help="Comma-separated output fields. Default all fields",
-    default=None,
-)
-def host(apikey, format, host, server, fields):
+@click.option("-i",
+              "--include",
+              required=False,
+              cls=MutuallyExclusiveOption,
+              mutually_exclusive=["exclude", "-e"],
+              help="Specify comma-separated fields that will be in the output")
+@click.option("-e",
+              "--exclude",
+              required=False,
+              cls=MutuallyExclusiveOption,
+              mutually_exclusive=["include", "-i"],
+              help="Specify comma-separated fields that will be excluded from the output")
+def host(apikey, format, host, server, include, exclude):
     """Host (ip or domain) information."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-        query_res = ns_con.host(host=host, fields=fields)
+        query_res = ns_con.host(host=host, 
+                                fields=include if include else exclude,
+                                exclude_fields=True if exclude else False)
         print(dump_object(data=query_res, format=format))
     except APIError as ex:
         print(dump_object(ex))
@@ -302,19 +321,18 @@ def host(apikey, format, host, server, fields):
     default="response",
     show_default=True,
 )
-@click.option(
-    "-f",
-    "--fields",
-    help="Comma-separated data of fields to include/exclude",
-)
-@click.option(
-    "-st",
-    "--source_type",
-    help="Include or exclude fields",
-    type=click.Choice(["include", "exclude"], case_sensitive=False),
-    default="exclude",
-    show_default=True,
-)
+@click.option("-i",
+              "--include",
+              required=False,
+              cls=MutuallyExclusiveOption,
+              mutually_exclusive=["exclude", "-e"],
+              help="Specify comma-separated fields that will be in the output")
+@click.option("-e",
+              "--exclude",
+              required=False,
+              cls=MutuallyExclusiveOption,
+              mutually_exclusive=["include", "-i"],
+              help="Specify comma-separated fields that will be excluded from the output")
 @click.option("-c",
               "--count",
               help="Count of results",
@@ -335,8 +353,7 @@ def host(apikey, format, host, server, fields):
     default="https://app.netlas.io",
     show_default=True,
 )
-@click.option("-i",
-              "--indices",
+@click.option("--indices",
               help="Specify comma-separated data index collections")
 def download(
     apikey,
@@ -346,29 +363,24 @@ def download(
     querystring,
     server,
     indices,
-    fields,
-    source_type,
+    include,
+    exclude,
 ):
     """Download data."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-        c_bytes: int = 0
-        fields = list() if not fields else fields.split(",")
         for i, query_res in enumerate(
                 ns_con.download(
                     query=querystring,
                     datatype=datatype,
                     size=count,
                     indices=indices,
-                    fields=fields,
-                    source_type=source_type,
+                    fields=include if include else exclude,
+                    exclude_fields=True if exclude else False,
                 )):
             if i > 0:
                 output_file.write(b"\n")
             output_file.write(query_res)
-            c_bytes += len(query_res)
-            print(f"{c_bytes} bytes has been written to {output_file.name}",
-                  end="\r")
         print("\n")
     except APIError as ex:
         print(dump_object(ex))
