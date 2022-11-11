@@ -30,11 +30,18 @@ Send query `port:7001` to retrieve all responses available in Netlas.io with por
 
     import netlas
 
-    apikey = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    apikey = "YOUR_API_KEY"
 
+    # create new connection to Netlas
     netlas_connection = netlas.Netlas(api_key=apikey)
-    query_res = netlas_connection.query(query="port:7001")
-    print(netlas.helpers.dump_object(data=query_res))
+
+    # retrieve data from responses by query `port:7001`
+    netlas_query = netlas_connection.query(query="port:7001")
+
+    # iterate over data and print: IP address, port, path and protocol
+    for response in netlas_query['items']:
+        print(f"{response['data']['ip']}:{response['data']['port']}{response['data']['path']} [{response['data']['protocol']}]")
+    pass
 
 
 CLI usage
@@ -65,19 +72,27 @@ Show specific command help:
 .. code-block:: bash
 	
     user@pc:~$ netlas query --help
-    Usage: netlas query [OPTIONS] QUERYSTRING
+    Usage: python -m netlas query [OPTIONS] QUERYSTRING
 
     Search query.
 
     Options:
-    -d, --datatype [response|cert|domain]
+    -d, --datatype [response|cert|domain|whois-ip|whois-domain]
                                     Query data type  [default: response]
-    -a, --apikey TEXT               User API key  [required]
+    -a, --apikey TEXT               User API key (can be saved to system using
+                                    command `netlas savekey`)
     -f, --format [json|yaml]        Output format  [default: yaml]
-    -s, --server TEXT               Netlas API server  [default:
+    --server TEXT                   Netlas API server  [default:
                                     https://app.netlas.io]
-
-    -i, --indices TEXT              Specify comma-separated data index
+    --indices TEXT                  Specify comma-separated data index
                                     collections
-
+    -i, --include TEXT              Specify comma-separated fields that will be
+                                    in the output NOTE: This argument is
+                                    mutually exclusive with  arguments: [-e,
+                                    exclude].
+    -e, --exclude TEXT              Specify comma-separated fields that will be
+                                    excluded from the output NOTE: This argument
+                                    is mutually exclusive with  arguments:
+                                    [include, -i].
+    -p, --page INTEGER              Specify data page  [default: 0]
     -h, --help                      Show this message and exit.

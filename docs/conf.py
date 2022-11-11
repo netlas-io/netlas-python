@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = 'netlas-python'
-copyright = '2021, Netlas Team'
+copyright = '2022, Netlas Team'
 author = 'Netlas Team'
 
 # -- General configuration ---------------------------------------------------
