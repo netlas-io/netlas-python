@@ -1,4 +1,19 @@
 ## Changelog
+#### v0.3.0 (2022-11-11)
+------------------------
+
+##### Added
+- Include/exclude fields for `query`, `download` and `host`
+- Whois-domain search.
+
+##### Changed
+- Migrate whois searches in query function.
+- Download to stdout by default.
+
+##### Removed
+- '-s' server flag.
+
+
 #### v0.1.6 (2021-08-05)
 ------------------------
 
