@@ -103,7 +103,7 @@ class Netlas:
             ret["error"] = f"Unexpected Stream error"
             raise APIError(ret["error"])
 
-    def query(
+    def search(
         self, query: str, datatype: str = "response", page: int = 0, indices: str = "", fields: str = None, exclude_fields: bool = False
     ) -> dict:
         """Send search query to Netlas API
@@ -143,6 +143,8 @@ class Netlas:
             },
         )
         return ret
+
+    query = search # for backward compatibility
 
     def count(self, query: str, datatype: str = "response", indices: str = "") -> dict:
         """Calculate total count of query string results

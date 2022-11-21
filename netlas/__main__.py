@@ -2,7 +2,7 @@ import netlas
 import click
 import appdirs
 import os
-from netlas.helpers import MutuallyExclusiveOption, dump_object, get_api_key
+from netlas.helpers import ClickAliasedGroup, MutuallyExclusiveOption, dump_object, get_api_key
 from netlas.exception import APIError
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
@@ -10,7 +10,7 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 # Default entry point for CLI
 
 
-@click.group(context_settings=CONTEXT_SETTINGS)
+@click.group(context_settings=CONTEXT_SETTINGS, cls=ClickAliasedGroup)
 def main():
     pass
 
@@ -53,7 +53,7 @@ def savekey(api_key, server):
         return
 
 
-@main.command()
+@main.command(aliases=['query'])
 @click.option(
     "-d",
     "--datatype",
@@ -104,11 +104,11 @@ def savekey(api_key, server):
               default=0,
               show_default=True,
               help="Specify data page")
-def query(datatype, apikey, format, querystring, server, indices, include, exclude, page):
+def search(datatype, apikey, format, querystring, server, indices, include, exclude, page):
     """Search query."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-        query_res = ns_con.query(query=querystring,
+        query_res = ns_con.search(query=querystring,
                                  datatype=datatype,
                                  page=page,
                                  indices=indices,
