@@ -251,7 +251,7 @@ class Netlas:
         :type fields: str
         :param exclude_fields: Exclude fields from output (instead include), defaults to False
         :type exclude_fields: bool
-        :param datatype: Data type (choices: response, cert, domain), defaults to "response"
+        :param datatype: Data type (choices: response, cert, domain, whois-ip, whois-domain), defaults to "response"
         :type datatype: str, optional
         :param size: Download documents count, defaults to 10
         :type size: int, optional
@@ -265,6 +265,10 @@ class Netlas:
             endpoint = "/api/certs/download/"
         elif datatype == "domain":
             endpoint = "/api/domains/download/"
+        elif datatype == "whois-ip":
+            endpoint = "/api/whois_ip/download/"
+        elif datatype == "whois-domain":
+            endpoint = "/api/whois_domains/download/"
 
         for ret in self._stream_request(
             endpoint=endpoint,

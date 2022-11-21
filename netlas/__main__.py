@@ -317,7 +317,7 @@ def host(apikey, format, host, server, include, exclude):
     "-d",
     "--datatype",
     help="Query data type",
-    type=click.Choice(["response", "cert", "domain"], case_sensitive=False),
+    type=click.Choice(["response", "cert", "domain", "whois-ip", "whois-domain"], case_sensitive=False),
     default="response",
     show_default=True,
 )
