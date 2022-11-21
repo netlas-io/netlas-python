@@ -149,7 +149,7 @@ class Netlas:
 
         :param query: Search query string
         :type query: str
-        :param datatype: Data type (choises: response, cert, domain), defaults to "response"
+        :param datatype: Data type (choises: response, cert, domain, whois-ip, whois-domain), defaults to "response"
         :type datatype: str, optional
         :param indices: Comma-separated IDs of selected data indices (can be retrieved by `indices` method), defaults to ""
         :type indices: str, optional
@@ -161,6 +161,10 @@ class Netlas:
             endpoint = "/api/certs_count/"
         elif datatype == "domain":
             endpoint = "/api/domains_count/"
+        elif datatype == "whois-ip":
+            endpoint = "/api/whois_ip_count/"
+        elif datatype == "whois-domain":
+            endpoint = "/api/whois_domains_count/"
         ret = self._request(endpoint=endpoint, params={
                             "q": query, "indices": indices})
         return ret
