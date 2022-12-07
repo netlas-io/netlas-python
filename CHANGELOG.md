@@ -1,4 +1,15 @@
 ## Changelog
+#### v0.4.0 (2022-12-07)
+------------------------
+
+##### Added
+- Whois-ip and whois-domain datatypes in `download` method.
+- Whois-ip and whois-domain datatypes in `count` method.
+
+##### Changed
+- Rename `query` to `search`
+
+
 #### v0.3.0 (2022-11-11)
 ------------------------
 
