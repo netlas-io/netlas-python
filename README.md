@@ -91,3 +91,15 @@ Options:
 -p, --page INTEGER              Specify data page  [default: 0]
 -h, --help                      Show this message and exit.
 ```
+
+## Bootstraping
+
+You may want to registry your API key.
+
+```
+netlas query savekey YOUR_API_KEY
+```
+netlas as now saved your key, you can now use the CLI as such:
+```
+netlas query 'THE_QUERY'
+```
