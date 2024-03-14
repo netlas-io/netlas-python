@@ -6,6 +6,8 @@ Please, refer to the documentation to learn where to get an API key and what tec
 
 [Documentation &rarr;](https://docs.netlas.io/automation/)
 
+[![License: CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-nd/4.0/)
+
 ## Installation
 
 Installation:
