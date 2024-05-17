@@ -335,8 +335,18 @@ def host(apikey, format, host, server, include, exclude):
               help="Specify comma-separated fields that will be excluded from the output")
 @click.option("-c",
               "--count",
-              help="Count of results",
+              help="Download specific count of data",
               default=10,
+              cls=MutuallyExclusiveOption,
+              mutually_exclusive=["all"],
+              show_default=True)
+@click.option("--all",
+              "all_",
+              help="Download all available data",
+              is_flag=True,
+              default=False,
+              cls=MutuallyExclusiveOption,
+              mutually_exclusive=["count", "-c"],
               show_default=True)
 @click.option(
     "-o",
@@ -359,6 +369,7 @@ def download(
     apikey,
     datatype,
     count,
+    all_,
     output_file,
     querystring,
     server,
@@ -369,6 +380,11 @@ def download(
     """Download data."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
+        if all_:
+            count_res = ns_con.count(query=querystring, datatype=datatype, indices=indices)
+            if count_res["count"] > 0:
+                count = count_res["count"]
+
         for i, query_res in enumerate(
                 ns_con.download(
                     query=querystring,
@@ -381,6 +397,7 @@ def download(
             if i > 0:
                 output_file.write(b"\n")
             output_file.write(query_res)
+        
         print("\n")
     except APIError as ex:
         print(dump_object(ex))
