@@ -1,5 +1,5 @@
 import requests
-import orjson
+import json
 import yaml
 from io import TextIOWrapper
 
@@ -53,8 +53,8 @@ class Netlas:
                 headers=self.headers,
                 verify=self.verify_ssl,
             )
-            response_data = orjson.loads(r.text)
-        except orjson.JSONDecodeError:
+            response_data = json.loads(r.text)
+        except json.JSONDecodeError:
             ret["error"] = "Failed to parse response data to JSON"
             if self.debug:
                 ret["error"] += "\nDescription: " + r.reason

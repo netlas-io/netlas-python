@@ -1,7 +1,7 @@
 import yaml
 import json
 import pygments
-import orjson
+import json
 import appdirs
 import os
 from click import Option, UsageError, Group
@@ -32,7 +32,8 @@ class MutuallyExclusiveOption(Option):
         if self.mutually_exclusive:
             ex_str = ', '.join(self.mutually_exclusive)
             kwargs['help'] = help + (
-                ' NOTE: This argument is mutually exclusive with '
+                '                               '
+                'NOTE: This argument is mutually exclusive with '
                 ' arguments: [' + ex_str + '].'
             )
         super(MutuallyExclusiveOption, self).__init__(*args, **kwargs)
@@ -42,7 +43,7 @@ class MutuallyExclusiveOption(Option):
             raise UsageError(
                 "Illegal usage: `{}` is mutually exclusive with "
                 "arguments `{}`.".format(
-                    self.name,
+                    ', '.join(self.opts),
                     ', '.join(self.mutually_exclusive)
                 )
             )
@@ -152,8 +153,8 @@ def check_status_code(request: Request, debug: bool = False, ret: dict = {}):
             ret["error"] = "Request limit"
         else:
             try:
-                error_text = orjson.loads(request.text)
-                ret["error"] = error_text["error"]
+                error_text = json.loads(request.text)
+                ret["error"] = error_text["error"] if "error" in error_text.keys() else error_text["detail"]
             except:
                 ret["error"] = f"{request.status_code}: {request.reason}"
         if debug:
