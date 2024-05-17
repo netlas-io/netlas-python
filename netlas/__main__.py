@@ -2,6 +2,8 @@ import netlas
 import click
 import appdirs
 import os
+from rich.progress import Progress, SpinnerColumn, TimeElapsedColumn, MofNCompleteColumn, TextColumn, BarColumn, TaskProgressColumn, TimeRemainingColumn
+from rich.style import Style
 from netlas.helpers import ClickAliasedGroup, MutuallyExclusiveOption, dump_object, get_api_key
 from netlas.exception import APIError
 
@@ -384,7 +386,20 @@ def download(
             count_res = ns_con.count(query=querystring, datatype=datatype, indices=indices)
             if count_res["count"] > 0:
                 count = count_res["count"]
-
+        progress = None
+        downloaded_docs_count = 0
+        if output_file.name != "<stdout>":
+            bar_style = Style(color="bright_white", blink=False, bold=True)
+            bar_complete_style = Style(color="dodger_blue1", blink=False, bold=True)
+            bar_finished_style = Style(color="dodger_blue2", blink=False, bold=True)
+            progress = Progress(SpinnerColumn(style=bar_finished_style),
+                                TextColumn("[progress.description]{task.description}"),
+                                BarColumn(style=bar_style, finished_style=bar_finished_style, complete_style=bar_complete_style),
+                                TaskProgressColumn(),
+                                TimeRemainingColumn(),
+                                MofNCompleteColumn())
+            pg_bar = progress.add_task("[dodger_blue1]Downloading...", total=count)
+            progress.start()
         for i, query_res in enumerate(
                 ns_con.download(
                     query=querystring,
@@ -397,8 +412,19 @@ def download(
             if i > 0:
                 output_file.write(b"\n")
             output_file.write(query_res)
+            downloaded_docs_count = i + 1
+            if progress:
+                progress.update(pg_bar, advance=1)
         
-        print("\n")
+        if progress:
+            progress.update(pg_bar, 
+                            total=downloaded_docs_count, 
+                            description="[dodger_blue2]Completed     ", 
+                            completed=downloaded_docs_count, 
+                            refresh=True)
+            progress.stop()
+        else:
+            print("\n")
     except APIError as ex:
         print(dump_object(ex))
 
