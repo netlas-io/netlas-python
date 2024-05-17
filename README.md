@@ -1,12 +1,14 @@
-# Netlas.io API Package
+# Netlas.io Python SDK
 
-This is a Netlas.io API package with CLI tool.
+This is a Netlas.io Python package with CLI tool.
 
-[Documentation](https://netlas-python.readthedocs.io/)
+Please, refer to the documentation to learn where to get an API key and what technical limits exist.
+
+[Documentation &rarr;](https://docs.netlas.io/automation/)
+
+[![License: CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-nd/4.0/)
 
 ## Installation
-
-Before using Python library for Netlas.io, get [API key](https://app.netlas.io/profile/).
 
 Installation:
 
@@ -22,8 +24,7 @@ $ pip install --upgrade netlas
 
 ## API usage
 
-Simple Netlas API example. 
-Send query `port:7001` to retrieve all responses available in Netlas.io with port=7001.
+The following code sample routes the request `port:7001` to the Netlas response search and prints search results to stdout.
 
 ```
 import netlas
