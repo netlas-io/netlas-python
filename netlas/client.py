@@ -16,12 +16,9 @@ class Netlas:
     ) -> None:
         """Netlas class constructor
 
-        :param api_key: Personal API key, defaults to ""
-        :type api_key: str
-        :param apibase: Netlas API server address, defaults to "https://app.netlas.io"
-        :type apibase: str, optional
-        :param debug: Debug flag, defaults to False
-        :type debug: bool, optional
+        :param api_key: Personal API key
+        :param apibase: Netlas API server address
+        :param debug: Debug flag
         """
         self.api_key: str = api_key
         self.apibase: str = apibase.rstrip("/")
@@ -36,14 +33,11 @@ class Netlas:
         """Private requests wrapper.
         Sends a request to Netlas API endpoint and process result.
 
-        :param endpoint: API endpoint, defaults to "/api/"
-        :type endpoint: str
-        :param params: GET parameters for request, defaults to {}
-        :type params: object, optional
+        :param endpoint: API endpoint
+        :param params: GET parameters for request
         :raises APIError: Failed to parse JSON response
         :raises APIError: Other HTTP error
         :return: parsed JSON response
-        :rtype: dict
         """
         ret: dict = {}
         try:
@@ -76,14 +70,11 @@ class Netlas:
         """Private stream requests wrapper.
         Sends a request to Netlas API endpoint and yield data from stream.
 
-        :param endpoint: API endpoint, defaults to "/api/"
-        :type endpoint: str
-        :param params: GET parameters for request, defaults to {}
-        :type params: object, optional
+        :param endpoint: API endpoint
+        :param params: GET parameters for request
         :raises APIError: Failed to parse JSON response
         :raises APIError: Other HTTP error
         :return: Iterator of raw bytes from response
-        :rtype: Iterator[bytes]
         """
         ret: dict = {}
         try:
@@ -109,19 +100,12 @@ class Netlas:
         """Send search query to Netlas API
 
         :param query: Search query string
-        :type query: str
-        :param datatype: Data type (choises: response, cert, domain, whois-ip, whois-domain), defaults to "response"
-        :type datatype: str, optional
-        :param page: Page number of data, defaults to 0
-        :type page: int, optional
-        :param indices: Comma-separated IDs of selected data indices (can be retrieved by `indices` method), defaults to ""
-        :type indices: str, optional
-        :param fields: Comma-separated list of fields to include/exclude, default: all fields
-        :type fields: str
-        :param exclude_fields: Exclude fields from output (instead include), defaults to False
-        :type exclude_fields: bool
+        :param datatype: Data type (choises: response, cert, domain, whois-ip, whois-domain)
+        :param page: Page number of data
+        :param indices: Comma-separated IDs of selected data indices (can be retrieved by `indices` method)
+        :param fields: Comma-separated list of fields to include/exclude
+        :param exclude_fields: Exclude fields from output (instead include)
         :return: search query result
-        :rtype: dict
         """
         endpoint = "/api/responses/"
         if datatype == "cert":
@@ -150,13 +134,9 @@ class Netlas:
         """Calculate total count of query string results
 
         :param query: Search query string
-        :type query: str
-        :param datatype: Data type (choises: response, cert, domain, whois-ip, whois-domain), defaults to "response"
-        :type datatype: str, optional
-        :param indices: Comma-separated IDs of selected data indices (can be retrieved by `indices` method), defaults to ""
-        :type indices: str, optional
+        :param datatype: Data type (choises: response, cert, domain, whois-ip, whois-domain)
+        :param indices: Comma-separated IDs of selected data indices (can be retrieved by `indices` method)
         :return: JSON object with total count of query string results
-        :rtype: dict
         """
         endpoint = "/api/responses_count/"
         if datatype == "cert":
@@ -182,17 +162,11 @@ class Netlas:
         """Get statistics of responses query string results
 
         :param query: Search query string
-        :type query: str
         :param group_fields: Comma-separated fields using for aggregate data
-        :type group_fields: str
-        :param indices: Comma-separated IDs of selected data indices (can be retrieved by `indices` method), defaults to ""
-        :type indices: str, optional
-        :param size: Aggregation size, default 100
-        :type size: int
-        :param index_type: Index type (choises: responses, certificates, domains), defaults to "responses"
-        :type index_type: str
+        :param indices: Comma-separated IDs of selected data indices (can be retrieved by `indices` method)
+        :param size: Aggregation size
+        :param index_type: Index type (choises: responses, certificates, domains)
         :return: JSON object with statistics of responses query string results
-        :rtype: dict
         """
         ret = self._request(
             endpoint="/api/stat/",
@@ -210,7 +184,6 @@ class Netlas:
         """Get user profile data
 
         :return: JSON object with user profile data
-        :rtype: dict
         """
         endpoint = "/api/users/current/"
         ret = self._request(endpoint=endpoint)
@@ -220,11 +193,8 @@ class Netlas:
         """Get full information about host (ip or domain)
 
         :param host: IP or domain string
-        :type host: str
         :param fields: Comma-separated output fields. If empty it will output all data
-        :type fields: str, optional
         :return: JSON object with full information about host
-        :rtype: dict
         """
         endpoint = f"/api/host/{host}" if host else "/api/host/"
         ret = self._request(
@@ -248,19 +218,12 @@ class Netlas:
         """Download data from Netlas
 
         :param query: Search query string
-        :type query: str
-        :param fields: Comma-separated list of fields to include/exclude, default: all fields
-        :type fields: str
-        :param exclude_fields: Exclude fields from output (instead include), defaults to False
-        :type exclude_fields: bool
-        :param datatype: Data type (choices: response, cert, domain, whois-ip, whois-domain), defaults to "response"
-        :type datatype: str, optional
-        :param size: Download documents count, defaults to 10
-        :type size: int, optional
-        :param indices: Comma-separated IDs of selected data indices (can be retrieved by `indices` method), defaults to ""
-        :type indices: list, optional
+        :param fields: Comma-separated list of fields to include/exclude
+        :param exclude_fields: Exclude fields from output (instead include)
+        :param datatype: Data type (choices: response, cert, domain, whois-ip, whois-domain)
+        :param size: Download documents count
+        :param indices: Comma-separated IDs of selected data indices (can be retrieved by `indices` method)
         :return: Iterator of raw data
-        :rtype: Iterator[bytes]
         """
         endpoint = "/api/responses/download/"
         if datatype == "cert":
@@ -293,20 +256,14 @@ class Netlas:
         datatype: str = "response",
         indices: str = "",
     ) -> bytes:
-        """Download data from Netlas
+        """Download all available data for given query
 
         :param query: Search query string
-        :type query: str
-        :param fields: Comma-separated list of fields to include/exclude, default: all fields
-        :type fields: str
-        :param exclude_fields: Exclude fields from output (instead include), defaults to False
-        :type exclude_fields: bool
-        :param datatype: Data type (choices: response, cert, domain, whois-ip, whois-domain), defaults to "response"
-        :type datatype: str, optional
-        :param indices: Comma-separated IDs of selected data indices (can be retrieved by `indices` method), defaults to ""
-        :type indices: list, optional
+        :param fields: Comma-separated list of fields to include/exclude
+        :param exclude_fields: Exclude fields from output (instead include)
+        :param datatype: Data type (choices: response, cert, domain, whois-ip, whois-domain)
+        :param indices: Comma-separated IDs of selected data indices (can be retrieved by `indices` method)
         :return: Iterator of raw data
-        :rtype: Iterator[bytes]
         """
         endpoint = "/api/responses/download/"
         if datatype == "cert":
@@ -345,7 +302,6 @@ class Netlas:
         """Get available data indices
 
         :return: List of available indices
-        :rtype: list
         """
         endpoint = "/api/indices/"
         ret = self._request(endpoint=endpoint)
