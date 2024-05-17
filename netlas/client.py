@@ -285,6 +285,62 @@ class Netlas:
         ):
             yield ret
 
+    def download_all(
+        self,
+        query: str,
+        fields: str = None, 
+        exclude_fields: bool = False,
+        datatype: str = "response",
+        indices: str = "",
+    ) -> bytes:
+        """Download data from Netlas
+
+        :param query: Search query string
+        :type query: str
+        :param fields: Comma-separated list of fields to include/exclude, default: all fields
+        :type fields: str
+        :param exclude_fields: Exclude fields from output (instead include), defaults to False
+        :type exclude_fields: bool
+        :param datatype: Data type (choices: response, cert, domain, whois-ip, whois-domain), defaults to "response"
+        :type datatype: str, optional
+        :param indices: Comma-separated IDs of selected data indices (can be retrieved by `indices` method), defaults to ""
+        :type indices: list, optional
+        :return: Iterator of raw data
+        :rtype: Iterator[bytes]
+        """
+        endpoint = "/api/responses/download/"
+        if datatype == "cert":
+            endpoint = "/api/certs/download/"
+        elif datatype == "domain":
+            endpoint = "/api/domains/download/"
+        elif datatype == "whois-ip":
+            endpoint = "/api/whois_ip/download/"
+        elif datatype == "whois-domain":
+            endpoint = "/api/whois_domains/download/"
+
+        count = None
+        count_res = self.count(query=query, datatype=datatype, indices=indices)
+        if count_res["count"] > 0:
+            count = count_res["count"]
+        
+        if count != None:
+            for ret in self._stream_request(
+                endpoint=endpoint,
+                params={
+                    "q": query,
+                    "size": count,
+                    "indices": indices,
+                    "raw": True,
+                    "fields": fields,
+                    "source_type": "exclude" if exclude_fields else "include",
+                },
+            ):
+                yield ret
+        else:
+            raise APIError({
+                "error": "No data is available"
+            })
+
     def indices(self) -> list:
         """Get available data indices
 
