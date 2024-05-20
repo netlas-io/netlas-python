@@ -84,14 +84,18 @@ class Netlas:
                 headers=self.headers,
                 verify=self.verify_ssl,
                 stream=True,
+                timeout=60.0
             ) as r:
                 check_status_code(request=r, debug=self.debug, ret=ret)
                 for chunk in r.iter_lines():
                     # skip keep-alive chunks
                     if chunk:
                         yield chunk
-        except:
-            ret["error"] = f"Unexpected Stream error"
+        except requests.exceptions.RequestException as ex:
+            try:
+                ret["error"] = str(ex)
+            except:
+                ret["error"] = f"Unexpected Stream error"
             raise APIError(ret["error"])
 
     def search(
