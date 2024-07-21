@@ -1,16 +1,12 @@
 # Netlas.io Python SDK
 
-This is a Netlas.io Python package with CLI tool.
-
-Please, refer to the documentation to learn where to get an API key and what technical limits exist.
-
-[Documentation &rarr;](https://docs.netlas.io/automation/)
+This repository contains Netlas.io Python package with CLI tool. Please, refer to the [documentation](https://docs.netlas.io/automation/) to learn where to get an API key and what technical limits exist.
 
 <span class="hidden">[![License: CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-nd/4.0/)</span>
 
 ## Installation
 
-Installation:
+If you are using Netlas on your system for the first time:
 
 ```
 $ pip install netlas
@@ -45,7 +41,7 @@ pass
 
 ## CLI usage
 
-Show global help:
+Run netlas with the `--help` option to learn available command:
 ```
 user@pc:~$ netlas --help
 Usage: netlas [OPTIONS] COMMAND [ARGS]...
@@ -64,7 +60,7 @@ Commands:
     stat      Get statistics for query.
 ```
 
-Show specific command help:
+Display help for a specific command:
 ```
 user@pc:~$ netlas query --help
 Usage: python -m netlas query [OPTIONS] QUERYSTRING
