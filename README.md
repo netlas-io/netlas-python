@@ -1,31 +1,132 @@
 # Netlas.io Python SDK
 
-This repository contains Netlas.io Python package with CLI tool. Please, refer to the [documentation](https://docs.netlas.io/automation/) to learn where to get an API key and what technical limits exist.
+This repository contains Netlas.io Python SDK package with CLI Tool.
+
+The _Netlas Python SDK_ is a software development kit provided by the Netlas team to facilitate the integration of Netlas services into Python applications. The SDK provides a convenient way to interact with the API, performing tasks such as queries, routing and parsing the JSON responses from the Netlas API into Python objects, simplifying the process of integrating Netlas data into Python projects.
+
+To access Netlas using the command line interface, the Netlas team has developed the _Netlas CLI Tool_. With it, you can use Netlas just like any other command line application. This utility is included in the Netlas Python SDK.
 
 <span class="hidden">[![License: CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-nd/4.0/)</span>
 
 ## Installation
 
-If you are using Netlas on your system for the first time:
+If you have Python installed, simply use the Python package installer to install the SDK and CLI Tool:
 
-```
-$ pip install netlas
+``` bash
+pip install netlas
 ```
 
 Or if you already have it installed and want to upgrade to the latest version:
 
-```
-$ pip install --upgrade netlas
+``` bash
+pip install --upgrade netlas
 ```
 
-## API usage
+## Checking the installation
+
+Now you can interact with the Netlas platform using command `netlas`.
+
+``` bash
+netlas
+```
+
+Try to get information about your external IP address:
+
+``` bash
+netlas host -a "YOUR_API_KEY"
+```
+
+The same data you should see in the web app if you open [https://app.netlas.io/host/](https://app.netlas.io/host/)
+
+## Additional tools
+
+We recommend using the Netlas CLI in conjunction with the `jq` utility. It is a lightweight and flexible command-line JSON processor, allowing you to perform various manipulations with the output.
+
+Refer to [JQ website](https://jqlang.github.io/jq/download/) for installation instructions.
+
+## Setting up API Key
+
+There are two ways of API key usage when you work with Netlas CLI (command line interface). The first way is to enter the key each time you enter a command with the `-a` option. Another way is to save the key using `savekey` command.
+
+``` bash
+netlas savekey "YOUR_API_KEY"
+```
+
+## CLI Usage
+
+Please refer to the built-in help for command and option information. To show help page:
+
+```` bash
+netlas --help
+````
+``` { .text .no-copy }
+
+Usage: netlas [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  -h, --help  Show this message and exit.
+
+Commands:
+  count           Calculate count of query results.
+  download        Download data.
+  host            Host (ip or domain) information.
+  indices         Get available data indices.
+  profile         Get user profile data.
+  savekey         Save API key to the local system.
+  search (query)  Search query.
+  stat            Get statistics for query.
+```
+
+To view specific command help use `--help` key with `netlas command`, e.g.:
+
+```` bash
+netlas count --help
+````
+``` { .text .no-copy }
+
+Usage: netlas count [OPTIONS] QUERYSTRING
+
+  Calculate count of query results.
+
+Options:
+  -d, --datatype [response|cert|domain|whois-ip|whois-domain]
+                                  Query data type  [default: response]
+  -a, --apikey TEXT               User API key (can be saved to system using
+                                  command `netlas savekey`)
+  -f, --format [json|yaml]        Output format  [default: yaml]
+  --server TEXT                   Netlas API server  [default:
+                                  https://app.netlas.io]
+  --indices TEXT                  Specify comma-separated data index
+                                  collections
+  -h, --help                      Show this message and exit.
+```
+
+Here are a few examples of CLI usage:
+
+- Equivalent to [https://app.netlas.io/host/1.1.1.1/](https://app.netlas.io/host/1.1.1.1/)
+  ``` bash
+  netlas host "1.1.1.1"			
+  ```
+- Equivalent to [https://app.netlas.io/responses/?q=host%3A1.1.1.1](https://app.netlas.io/responses/?q=host%3A1.1.1.1)
+  ``` bash
+  netlas search "host:1.1.1.1"
+  ```
+- Equivalent to [https://app.netlas.io/domains/?q=domain%3A%2A.netlas.io](https://app.netlas.io/domains/?q=domain%3A%2A.netlas.io)
+  ``` bash
+  netlas search --datatype domain "domain:*.netlas.io"
+  ```
+
+You can find more bash examples on the [Netlas Docs &rarr;](https://docs.netlas.io/automation/).
+
+## Python SDK Usage
 
 The following code sample routes the request `port:7001` to the Netlas response search and prints search results to stdout.
 
-```
+``` python
 import netlas
 
-apikey = "YOUR_API_KEY"
+# you can access saved API key using this helper
+apikey = netlas.helpers.get_api_key()
 
 # create new connection to Netlas
 netlas_connection = netlas.Netlas(api_key=apikey)
@@ -39,64 +140,7 @@ for response in netlas_query['items']:
 pass
 ```
 
-## CLI usage
+Please keep in mind that the example is simplified. When developing automation, it is necessary at least to provide procedures for exception handling. And it is also necessary to take into account that the API key may not be saved.
 
-Run netlas with the `--help` option to learn available command:
-```
-user@pc:~$ netlas --help
-Usage: netlas [OPTIONS] COMMAND [ARGS]...
+You can find more Python examples on the [Netlas Docs &rarr;](https://docs.netlas.io/automation/).
 
-Options:
--h, --help  Show this message and exit.
-
-Commands:
-    count     Calculate count of query results.
-    download  Download data.
-    host      Host (ip or domain) information.
-    indices   Get available data indices.
-    profile   Get user profile data.
-    query     Search query.
-    savekey   Save API key to the local system.
-    stat      Get statistics for query.
-```
-
-Display help for a specific command:
-```
-user@pc:~$ netlas query --help
-Usage: python -m netlas query [OPTIONS] QUERYSTRING
-
-Search query.
-
-Options:
--d, --datatype [response|cert|domain|whois-ip|whois-domain]
-                                Query data type  [default: response]
--a, --apikey TEXT               User API key (can be saved to system using
-                                command `netlas savekey`)
--f, --format [json|yaml]        Output format  [default: yaml]
---server TEXT                   Netlas API server  [default:
-                                https://app.netlas.io]
---indices TEXT                  Specify comma-separated data index
-                                collections
--i, --include TEXT              Specify comma-separated fields that will be
-                                in the output NOTE: This argument is
-                                mutually exclusive with  arguments: [-e,
-                                exclude].
--e, --exclude TEXT              Specify comma-separated fields that will be
-                                excluded from the output NOTE: This argument
-                                is mutually exclusive with  arguments:
-                                [include, -i].
--p, --page INTEGER              Specify data page  [default: 0]
--h, --help                      Show this message and exit.
-```
-
-## Bootstraping
-
-You may want to registry your API key.
-
-```
-netlas query savekey YOUR_API_KEY
-```
-netlas as now saved your key, you can now use the CLI as such:
-```
-netlas query 'THE_QUERY'
-```
