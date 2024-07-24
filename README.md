@@ -2,9 +2,9 @@
 
 This repository contains Netlas.io Python SDK package with CLI Tool.
 
-The _Netlas Python SDK_ is a software development kit provided by the Netlas team to facilitate the integration of Netlas services into Python applications. The SDK provides a convenient way to interact with the API, performing tasks such as queries, routing and parsing the JSON responses from the Netlas API into Python objects, simplifying the process of integrating Netlas data into Python projects.
+The __Netlas Python SDK__ is a software development kit provided by the Netlas team to facilitate the integration of Netlas services into Python applications. The SDK provides a convenient way to interact with the API, performing tasks such as queries, routing and parsing the JSON responses from the Netlas API into Python objects, simplifying the process of integrating Netlas data into Python projects.
 
-To access Netlas using the command line interface, the Netlas team has developed the _Netlas CLI Tool_. With it, you can use Netlas just like any other command line application. This utility is included in the Netlas Python SDK.
+To access Netlas using the command line interface, the Netlas team has developed the __Netlas CLI Tool__. With it, you can use Netlas just like any other command line application. This utility is included in the Netlas Python SDK.
 
 <span class="hidden">[![License: CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-nd/4.0/)</span>
 
