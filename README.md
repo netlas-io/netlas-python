@@ -60,7 +60,6 @@ Please refer to the built-in help for command and option information. To show he
 netlas --help
 ````
 ``` { class="no-copy" }
-
 Usage: netlas [OPTIONS] COMMAND [ARGS]...
 
 Options:
@@ -83,7 +82,6 @@ To view specific command help use `--help` key with `netlas command`, e.g.:
 netlas count --help
 ````
 ``` { class="no-copy" }
-
 Usage: netlas count [OPTIONS] QUERYSTRING
 
   Calculate count of query results.
