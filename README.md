@@ -59,7 +59,7 @@ Please refer to the built-in help for command and option information. To show he
 ```` bash
 netlas --help
 ````
-``` { .text .no-copy }
+``` { class="no-copy" }
 
 Usage: netlas [OPTIONS] COMMAND [ARGS]...
 
@@ -82,7 +82,7 @@ To view specific command help use `--help` key with `netlas command`, e.g.:
 ```` bash
 netlas count --help
 ````
-``` { .text .no-copy }
+``` { class="no-copy" }
 
 Usage: netlas count [OPTIONS] QUERYSTRING
 
