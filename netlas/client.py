@@ -132,7 +132,7 @@ class Netlas:
         )
         return ret
 
-    query = search # for backward compatibility
+    query = search  # for backward compatibility
 
     def count(self, query: str, datatype: str = "response", indices: str = "") -> dict:
         """Calculate total count of query string results
@@ -213,7 +213,7 @@ class Netlas:
     def download(
         self,
         query: str,
-        fields: str = None, 
+        fields: str = None,
         exclude_fields: bool = False,
         datatype: str = "response",
         size: int = 10,
@@ -255,7 +255,7 @@ class Netlas:
     def download_all(
         self,
         query: str,
-        fields: str = None, 
+        fields: str = None,
         exclude_fields: bool = False,
         datatype: str = "response",
         indices: str = "",
@@ -283,8 +283,8 @@ class Netlas:
         count_res = self.count(query=query, datatype=datatype, indices=indices)
         if count_res["count"] > 0:
             count = count_res["count"]
-        
-        if count != None:
+
+        if count is not None:
             for ret in self._stream_request(
                 endpoint=endpoint,
                 params={
@@ -311,3 +311,20 @@ class Netlas:
         ret = self._request(endpoint=endpoint)
         return ret
 
+    def datasets(self) -> list:
+        """Get available datasets
+
+        :return: List of available datasets with full information
+        """
+        endpoint = "/api/datastore/products"
+        ret = self._request(endpoint=endpoint)
+        return ret
+
+    def get_dataset_link(self, id) -> list:
+        """Get link of 'id' dataset
+
+        :return: JSON-object that contains link and name of dataset
+        """
+        endpoint = f"/api/datastore/get_dataset_link/{id}"
+        ret = self._request(endpoint=endpoint)
+        return ret
