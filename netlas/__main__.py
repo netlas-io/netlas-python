@@ -60,7 +60,8 @@ def savekey(api_key, server):
     "-d",
     "--datatype",
     help="Query data type",
-    type=click.Choice(["response", "cert", "domain", "whois-ip", "whois-domain"], case_sensitive=False),
+    type=click.Choice(["response", "cert", "domain", "whois-ip",
+                      "whois-domain"], case_sensitive=False),
     default="response",
     show_default=True,
 )
@@ -111,11 +112,11 @@ def search(datatype, apikey, format, querystring, server, indices, include, excl
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
         query_res = ns_con.search(query=querystring,
-                                 datatype=datatype,
-                                 page=page,
-                                 indices=indices,
-                                 fields=include if include else exclude,
-                                 exclude_fields=True if exclude else False)
+                                  datatype=datatype,
+                                  page=page,
+                                  indices=indices,
+                                  fields=include if include else exclude,
+                                  exclude_fields=True if exclude else False)
         print(dump_object(data=query_res, format=format))
     except APIError as ex:
         print(dump_object(ex))
@@ -126,7 +127,8 @@ def search(datatype, apikey, format, querystring, server, indices, include, excl
     "-d",
     "--datatype",
     help="Query data type",
-    type=click.Choice(["response", "cert", "domain", "whois-ip", "whois-domain"], case_sensitive=False),
+    type=click.Choice(["response", "cert", "domain", "whois-ip",
+                      "whois-domain"], case_sensitive=False),
     default="response",
     show_default=True,
 )
@@ -299,7 +301,7 @@ def host(apikey, format, host, server, include, exclude):
     """Host (ip or domain) information."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-        query_res = ns_con.host(host=host, 
+        query_res = ns_con.host(host=host,
                                 fields=include if include else exclude,
                                 exclude_fields=True if exclude else False)
         print(dump_object(data=query_res, format=format))
@@ -319,7 +321,8 @@ def host(apikey, format, host, server, include, exclude):
     "-d",
     "--datatype",
     help="Query data type",
-    type=click.Choice(["response", "cert", "domain", "whois-ip", "whois-domain"], case_sensitive=False),
+    type=click.Choice(["response", "cert", "domain", "whois-ip",
+                      "whois-domain"], case_sensitive=False),
     default="response",
     show_default=True,
 )
@@ -379,26 +382,32 @@ def download(
     include,
     exclude,
 ):
-    """Download data."""
+    """Download data of specific query."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
         if all_:
-            count_res = ns_con.count(query=querystring, datatype=datatype, indices=indices)
+            count_res = ns_con.count(
+                query=querystring, datatype=datatype, indices=indices)
             if count_res["count"] > 0:
                 count = count_res["count"]
         progress = None
         downloaded_docs_count = 0
         if output_file.name != "<stdout>":
             bar_style = Style(color="bright_white", blink=False, bold=True)
-            bar_complete_style = Style(color="dodger_blue1", blink=False, bold=True)
-            bar_finished_style = Style(color="dodger_blue2", blink=False, bold=True)
+            bar_complete_style = Style(
+                color="dodger_blue1", blink=False, bold=True)
+            bar_finished_style = Style(
+                color="dodger_blue2", blink=False, bold=True)
             progress = Progress(SpinnerColumn(style=bar_finished_style),
-                                TextColumn("[progress.description]{task.description}"),
-                                BarColumn(style=bar_style, finished_style=bar_finished_style, complete_style=bar_complete_style),
+                                TextColumn(
+                                    "[progress.description]{task.description}"),
+                                BarColumn(
+                                    style=bar_style, finished_style=bar_finished_style, complete_style=bar_complete_style),
                                 TaskProgressColumn(),
                                 TimeRemainingColumn(),
                                 MofNCompleteColumn())
-            pg_bar = progress.add_task("[dodger_blue1]Downloading...", total=count)
+            pg_bar = progress.add_task(
+                "[dodger_blue1]Downloading...", total=count)
             progress.start()
         for i, query_res in enumerate(
                 ns_con.download(
@@ -415,12 +424,12 @@ def download(
             downloaded_docs_count = i + 1
             if progress:
                 progress.update(pg_bar, advance=1)
-        
+
         if progress:
-            progress.update(pg_bar, 
-                            total=downloaded_docs_count, 
-                            description="[dodger_blue2]Completed     ", 
-                            completed=downloaded_docs_count, 
+            progress.update(pg_bar,
+                            total=downloaded_docs_count,
+                            description="[dodger_blue2]Completed     ",
+                            completed=downloaded_docs_count,
                             refresh=True)
             progress.stop()
         else:
@@ -456,6 +465,81 @@ def indices(apikey, server, format):
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
         query_res = ns_con.indices()
+        print(dump_object(data=query_res, format=format))
+    except APIError as ex:
+        print(dump_object(ex))
+
+
+@main.group()
+def datastore():
+    """Manage products in the datastore."""
+    pass
+
+
+@datastore.command()
+@click.option(
+    "-a",
+    "--apikey",
+    help="User API key (can be saved to system using command `netlas savekey`)",
+    required=False,
+    default=lambda: get_api_key(),
+)
+@click.option(
+    "-f",
+    "--format",
+    help="Output format",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+    show_default=True,
+)
+@click.option(
+    "--server",
+    help="Netlas API server",
+    default="https://app.netlas.io",
+    show_default=True,
+)
+def list(apikey, server, format):
+    """Get all available products."""
+    try:
+        ns_con = netlas.Netlas(api_key=apikey, apibase=server)
+        query_res = ns_con.datasets()
+        print(dump_object(data=query_res, format=format))
+    except APIError as ex:
+        print(dump_object(ex))
+
+
+@datastore.command()
+@click.option(
+    "-a",
+    "--apikey",
+    help="User API key (can be saved to system using command `netlas savekey`)",
+    required=False,
+    default=lambda: get_api_key(),
+)
+@click.option(
+    "-f",
+    "--format",
+    help="Output format",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+    show_default=True,
+)
+@click.option(
+    "--server",
+    help="Netlas API server",
+    default="https://app.netlas.io",
+    show_default=True,
+)
+@click.argument(
+    'id',
+    type=int,
+    required=True
+)
+def get(apikey, server, format, id):
+    """Get download link of `id` dataset."""
+    try:
+        ns_con = netlas.Netlas(api_key=apikey, apibase=server)
+        query_res = ns_con.get_dataset_link(id=id)
         print(dump_object(data=query_res, format=format))
     except APIError as ex:
         print(dump_object(ex))
