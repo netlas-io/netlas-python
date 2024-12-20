@@ -67,6 +67,7 @@ Options:
 
 Commands:
   count           Calculate count of query results.
+  datastore       Manage products in the datastore.
   download        Download data.
   host            Host (ip or domain) information.
   indices         Get available data indices.
