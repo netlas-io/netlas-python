@@ -150,7 +150,13 @@ def check_status_code(request: Request, debug: bool = False, ret: dict = {}):
         elif request.status_code == 403:
             ret["error"] = "Account restrictions. Upgrade account to make this request"
         elif request.status_code == 429:
-            ret["error"] = "Request limit"
+            ret["error"] = "Request throttled: Rate-limit exceeded"
+        elif request.status_code in [1006, 1007, 1008, 1106]:
+            ret["error"] = "Your IP address has been temporary banned"
+        elif request.status_code == 524:
+            ret["error"] = "A timeout occurred"
+        elif request.status_code == 521:
+            ret["error"] = "Netlas server is temporary down"
         else:
             try:
                 error_text = json.loads(request.text)
