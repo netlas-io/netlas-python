@@ -1,6 +1,6 @@
 import requests
 import json
-import yaml
+import time
 from io import TextIOWrapper
 
 from netlas.exception import APIError
@@ -29,12 +29,14 @@ class Netlas:
         self.headers = {"Content-Type": "application/json",
                         "X-Api-Key": self.api_key}
 
-    def _request(self, endpoint: str = "/api/", params: object = {}) -> dict:
+    def _request(self, endpoint: str = "/api/", params: object = {}, throttling: bool = True, retry: int = 1) -> dict:
         """Private requests wrapper.
         Sends a request to Netlas API endpoint and process result.
 
         :param endpoint: API endpoint
         :param params: GET parameters for request
+        :param throttling: Wait and retry request if 429 error (Too many requests) occured, defaults to True
+        :param retry: Retry count, defaults to 1
         :raises APIError: Failed to parse JSON response
         :raises APIError: Other HTTP error
         :return: parsed JSON response
@@ -47,21 +49,33 @@ class Netlas:
                 headers=self.headers,
                 verify=self.verify_ssl,
             )
+        except requests.HTTPError:
+            ret["error"] = f"{r.status_code}: {r.reason}"
+            if self.debug:
+                ret["error"] += "\nDescription: " + r.reason
+                ret["error"] += "\nData: " + r.text
+            raise APIError(ret["error"])
+
+        try:
+            check_status_code(request=r, debug=self.debug, ret=ret)
+        except APIError as api_ex:
+            if throttling == True and retry > 0 and api_ex.value == "Too many requests":
+                throttling_time = int(r.headers.get('Retry-after', 0))
+                if self.debug:
+                    print(f"Throttling request for {throttling_time} seconds", flush=True)
+                time.sleep(throttling_time)
+                return self._request(endpoint=endpoint, params=params, throttling=throttling, retry=retry-1)
+            else:
+                raise api_ex
+        
+        try:
             response_data = json.loads(r.text)
         except json.JSONDecodeError:
             ret["error"] = "Failed to parse response data to JSON"
             if self.debug:
                 ret["error"] += "\nDescription: " + r.reason
                 ret["error"] += "\nData: " + r.text
-        except requests.HTTPError:
-            ret["error"] = f"{r.status_code}: {r.reason}"
-            if self.debug:
-                ret["error"] += "\nDescription: " + r.reason
-                ret["error"] += "\nData: " + r.text
-
-        if ret.get("error", None):
             raise APIError(ret["error"])
-        check_status_code(request=r, debug=self.debug, ret=ret)
 
         ret = response_data
         return ret
@@ -99,7 +113,15 @@ class Netlas:
             raise APIError(ret["error"])
 
     def search(
-        self, query: str, datatype: str = "response", page: int = 0, indices: str = "", fields: str = None, exclude_fields: bool = False
+        self, 
+        query: str, 
+        datatype: str = "response", 
+        page: int = 0, 
+        indices: str = "", 
+        fields: str = None, 
+        exclude_fields: bool = False,
+        throttling: bool = True, 
+        retry: int = 1
     ) -> dict:
         """Send search query to Netlas API
 
@@ -129,12 +151,21 @@ class Netlas:
                 "fields": fields,
                 "source_type": "exclude" if exclude_fields else "include"
             },
+            throttling=throttling,
+            retry=retry
         )
         return ret
 
     query = search  # for backward compatibility
 
-    def count(self, query: str, datatype: str = "response", indices: str = "") -> dict:
+    def count(
+        self, 
+        query: str, 
+        datatype: str = "response", 
+        indices: str = "",
+        throttling: bool = True, 
+        retry: int = 1
+    ) -> dict:
         """Calculate total count of query string results
 
         :param query: Search query string
@@ -151,8 +182,15 @@ class Netlas:
             endpoint = "/api/whois_ip_count/"
         elif datatype == "whois-domain":
             endpoint = "/api/whois_domains_count/"
-        ret = self._request(endpoint=endpoint, params={
-                            "q": query, "indices": indices})
+        ret = self._request(
+            endpoint=endpoint, 
+            params={
+                "q": query,
+                "indices": indices
+            },
+            throttling=throttling,
+            retry=retry
+        )
         return ret
 
     def stat(
@@ -162,6 +200,8 @@ class Netlas:
         indices: str = "",
         size: int = 100,
         index_type: str = "responses",
+        throttling: bool = True, 
+        retry: int = 1
     ) -> dict:
         """Get statistics of responses query string results
 
@@ -181,6 +221,8 @@ class Netlas:
                 "index_type": index_type,
                 "indices": indices,
             },
+            throttling=throttling,
+            retry=retry
         )
         return ret
 
@@ -193,7 +235,14 @@ class Netlas:
         ret = self._request(endpoint=endpoint)
         return ret
 
-    def host(self, host: str, fields: str = None, exclude_fields: bool = False) -> dict:
+    def host(
+        self, 
+        host: str, 
+        fields: str = None, 
+        exclude_fields: bool = False,
+        throttling: bool = True, 
+        retry: int = 1
+    ) -> dict:
         """Get full information about host (ip or domain)
 
         :param host: IP or domain string
@@ -207,6 +256,8 @@ class Netlas:
                 "fields": fields,
                 "source_type": "exclude" if exclude_fields else "include"
             },
+            throttling=throttling,
+            retry=retry
         )
         return ret
 
