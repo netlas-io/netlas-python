@@ -163,7 +163,7 @@ def count(datatype, apikey, querystring, server, format, indices):
         query_res = ns_con.count(query=querystring,
                                  datatype=datatype,
                                  indices=indices)
-        print(dump_object(data=query_res, format=format))
+        print(query_res['count'])
     except APIError as ex:
         print(dump_object(ex))
 
@@ -476,7 +476,7 @@ def datastore():
     pass
 
 
-@datastore.command()
+@datastore.command("list")
 @click.option(
     "-a",
     "--apikey",
@@ -498,7 +498,7 @@ def datastore():
     default="https://app.netlas.io",
     show_default=True,
 )
-def list(apikey, server, format):
+def list_datasets(apikey, server, format):
     """Get all available products."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
@@ -508,7 +508,7 @@ def list(apikey, server, format):
         print(dump_object(ex))
 
 
-@datastore.command()
+@datastore.command("get")
 @click.option(
     "-a",
     "--apikey",
@@ -535,12 +535,258 @@ def list(apikey, server, format):
     type=int,
     required=True
 )
-def get(apikey, server, format, id):
+def get_dataset(apikey, server, format, id):
     """Get download link of `id` dataset."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
         query_res = ns_con.get_dataset_link(id=id)
         print(dump_object(data=query_res, format=format))
+    except APIError as ex:
+        print(dump_object(ex))
+
+
+@main.group()
+def scan():
+    """Manage scans."""
+    pass
+
+
+@scan.command("list")
+@click.option(
+    "-a",
+    "--apikey",
+    help="User API key (can be saved to system using command `netlas savekey`)",
+    required=False,
+    default=lambda: get_api_key(),
+)
+@click.option(
+    "-f",
+    "--format",
+    help="Output format",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+    show_default=True,
+)
+@click.option(
+    "--server",
+    help="Netlas API server",
+    default="https://app.netlas.io",
+    show_default=True,
+)
+def list_scans(apikey, server, format):
+    """List all existing private scans."""
+    try:
+        ns_con = netlas.Netlas(api_key=apikey, apibase=server)
+        res = ns_con.scans()
+        print(dump_object(data=res, format=format))
+    except APIError as ex:
+        print(dump_object(ex))
+
+
+@scan.command("get")
+@click.option(
+    "-a",
+    "--apikey",
+    help="User API key (can be saved to system using command `netlas savekey`)",
+    required=False,
+    default=lambda: get_api_key(),
+)
+@click.option(
+    "-f",
+    "--format",
+    help="Output format",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+    show_default=True,
+)
+@click.option(
+    "--server",
+    help="Netlas API server",
+    default="https://app.netlas.io",
+    show_default=True,
+)
+@click.argument(
+    'id',
+    type=int,
+    required=True
+)
+def scan_get(apikey, server, format, id):
+    """Get info about scan."""
+    try:
+        ns_con = netlas.Netlas(api_key=apikey, apibase=server)
+        res = ns_con.scan_get(id=id)
+        print(dump_object(data=res, format=format))
+    except APIError as ex:
+        print(dump_object(ex))
+
+
+@scan.command("create")
+@click.option(
+    "-a",
+    "--apikey",
+    help="User API key (can be saved to system using command `netlas savekey`)",
+    required=False,
+    default=lambda: get_api_key(),
+)
+@click.option(
+    "-f",
+    "--format",
+    help="Output format",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+    show_default=True,
+)
+@click.option(
+    "--server",
+    help="Netlas API server",
+    default="https://app.netlas.io",
+    show_default=True,
+)
+@click.option(
+    "--targets",
+    help="Targets to scan.",
+    required=True,
+    type=str
+)
+@click.option(
+    "--label",
+    help="Name of new scan.",
+    required=True
+)
+def create_scan(apikey, server, format, targets, label):
+    """Create scan."""
+    try:
+        ns_con = netlas.Netlas(api_key=apikey, apibase=server)
+        for i, data in enumerate(
+                ns_con.scan_create(
+                    targets=targets.split(','),
+                    label=label
+                )):
+            if i > 0:
+                print(data)
+    except APIError as ex:
+        print(dump_object(ex))
+
+
+@scan.command("rename")
+@click.option(
+    "-a",
+    "--apikey",
+    help="User API key (can be saved to system using command `netlas savekey`)",
+    required=False,
+    default=lambda: get_api_key(),
+)
+@click.option(
+    "-f",
+    "--format",
+    help="Output format",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+    show_default=True,
+)
+@click.option(
+    "--server",
+    help="Netlas API server",
+    default="https://app.netlas.io",
+    show_default=True,
+)
+@click.option(
+    "--id",
+    help="ID of scan",
+    required=True
+)
+@click.option(
+    "--label",
+    help="New of scan name.",
+    required=True
+)
+def rename_scan(apikey, server, format, id, label):
+    """Rename scan."""
+    try:
+        ns_con = netlas.Netlas(api_key=apikey, apibase=server)
+        res = ns_con.scan_rename(id=id, label=label)
+        print(dump_object(data=res, format=format))
+    except APIError as ex:
+        print(dump_object(ex))
+
+
+@scan.command("delete")
+@click.option(
+    "-a",
+    "--apikey",
+    help="User API key (can be saved to system using command `netlas savekey`)",
+    required=False,
+    default=lambda: get_api_key(),
+)
+@click.option(
+    "-f",
+    "--format",
+    help="Output format",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+    show_default=True,
+)
+@click.option(
+    "--server",
+    help="Netlas API server",
+    default="https://app.netlas.io",
+    show_default=True,
+)
+@click.option(
+    "--id",
+    help="ID of scan",
+    required=True
+)
+def delete_scan(apikey, server, format, id):
+    """Delete scan of `id`."""
+    try:
+        ns_con = netlas.Netlas(api_key=apikey, apibase=server)
+        res = ns_con.scan_delete(id=id)
+        print(dump_object(data=res, format=format))
+    except APIError as ex:
+        print(dump_object(ex))
+
+
+@scan.command("priority")
+@click.option(
+    "-a",
+    "--apikey",
+    help="User API key (can be saved to system using command `netlas savekey`)",
+    required=False,
+    default=lambda: get_api_key(),
+)
+@click.option(
+    "-f",
+    "--format",
+    help="Output format",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+    show_default=True,
+)
+@click.option(
+    "--server",
+    help="Netlas API server",
+    default="https://app.netlas.io",
+    show_default=True,
+)
+@click.option(
+    "--id",
+    help="ID of scan",
+    type=int,
+    required=True
+)
+@click.option(
+    "--shift",
+    help="Priority number",
+    type=int,
+    required=True
+)
+def priority_scan(apikey, server, format, id, shift):
+    """Change priority scan of `id`."""
+    try:
+        ns_con = netlas.Netlas(api_key=apikey, apibase=server)
+        res = ns_con.scan_priority(id=id, shift=shift)
+        print(dump_object(data=res, format=format))
     except APIError as ex:
         print(dump_object(ex))
 

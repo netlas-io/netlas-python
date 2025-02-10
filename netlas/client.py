@@ -3,7 +3,7 @@ import json
 import time
 from io import TextIOWrapper
 
-from netlas.exception import APIError
+from netlas.exception import APIError, ThrottlingError
 from netlas.helpers import check_status_code
 
 
@@ -29,7 +29,7 @@ class Netlas:
         self.headers = {"Content-Type": "application/json",
                         "X-Api-Key": self.api_key}
 
-    def _request(self, endpoint: str = "/api/", params: object = {}, throttling: bool = True, retry: int = 1) -> dict:
+    def _request(self, endpoint: str = "/api/", params: object = {}, throttling: bool = True, retry: int = 1, method: str = 'get') -> dict:
         """Private requests wrapper.
         Sends a request to Netlas API endpoint and process result.
 
@@ -43,12 +43,34 @@ class Netlas:
         """
         ret: dict = {}
         try:
-            r = requests.get(
-                f"{self.apibase}{endpoint}",
-                params=params,
-                headers=self.headers,
-                verify=self.verify_ssl,
-            )
+            if method == 'get':
+                r = requests.get(
+                    f"{self.apibase}{endpoint}",
+                    params=params,
+                    headers=self.headers,
+                    verify=self.verify_ssl,
+                )
+            elif method == 'patch':
+                r = requests.patch(
+                    f"{self.apibase}{endpoint}",
+                    json=params,
+                    headers=self.headers,
+                    verify=self.verify_ssl,
+                )
+            elif method == 'delete':
+                r = requests.delete(
+                    f"{self.apibase}{endpoint}",
+                    params=params,
+                    headers=self.headers,
+                    verify=self.verify_ssl,
+                )
+            elif method == 'post':
+                r = requests.post(
+                    f"{self.apibase}{endpoint}",
+                    json=params,
+                    headers=self.headers,
+                    verify=self.verify_ssl
+                )
         except requests.HTTPError:
             ret["error"] = f"{r.status_code}: {r.reason}"
             if self.debug:
@@ -59,15 +81,16 @@ class Netlas:
         try:
             check_status_code(request=r, debug=self.debug, ret=ret)
         except APIError as api_ex:
-            if throttling == True and retry > 0 and api_ex.value == "Too many requests":
+            if throttling is True and retry > 0 and api_ex.value == "Too many requests":
                 throttling_time = int(r.headers.get('Retry-after', 0))
                 if self.debug:
                     print(f"Throttling request for {throttling_time} seconds", flush=True)
+                    raise ThrottlingError(retry_after=str(throttling_time))
                 time.sleep(throttling_time)
-                return self._request(endpoint=endpoint, params=params, throttling=throttling, retry=retry-1)
+                return self._request(endpoint=endpoint, params=params, throttling=throttling, retry=retry-1, method=method)
             else:
                 raise api_ex
-        
+
         try:
             response_data = json.loads(r.text)
         except json.JSONDecodeError:
@@ -109,18 +132,18 @@ class Netlas:
             try:
                 ret["error"] = str(ex)
             except:
-                ret["error"] = f"Unexpected Stream error"
+                ret["error"] = "Unexpected Stream error"
             raise APIError(ret["error"])
 
     def search(
-        self, 
-        query: str, 
-        datatype: str = "response", 
-        page: int = 0, 
-        indices: str = "", 
-        fields: str = None, 
+        self,
+        query: str,
+        datatype: str = "response",
+        page: int = 0,
+        indices: str = "",
+        fields: str = None,
         exclude_fields: bool = False,
-        throttling: bool = True, 
+        throttling: bool = True,
         retry: int = 1
     ) -> dict:
         """Send search query to Netlas API
@@ -159,11 +182,11 @@ class Netlas:
     query = search  # for backward compatibility
 
     def count(
-        self, 
-        query: str, 
-        datatype: str = "response", 
+        self,
+        query: str,
+        datatype: str = "response",
         indices: str = "",
-        throttling: bool = True, 
+        throttling: bool = True,
         retry: int = 1
     ) -> dict:
         """Calculate total count of query string results
@@ -183,7 +206,7 @@ class Netlas:
         elif datatype == "whois-domain":
             endpoint = "/api/whois_domains_count/"
         ret = self._request(
-            endpoint=endpoint, 
+            endpoint=endpoint,
             params={
                 "q": query,
                 "indices": indices
@@ -200,7 +223,7 @@ class Netlas:
         indices: str = "",
         size: int = 100,
         index_type: str = "responses",
-        throttling: bool = True, 
+        throttling: bool = True,
         retry: int = 1
     ) -> dict:
         """Get statistics of responses query string results
@@ -236,11 +259,11 @@ class Netlas:
         return ret
 
     def host(
-        self, 
-        host: str, 
-        fields: str = None, 
+        self,
+        host: str,
+        fields: str = None,
         exclude_fields: bool = False,
-        throttling: bool = True, 
+        throttling: bool = True,
         retry: int = 1
     ) -> dict:
         """Get full information about host (ip or domain)
@@ -367,7 +390,7 @@ class Netlas:
 
         :return: List of available datasets with full information
         """
-        endpoint = "/api/datastore/products"
+        endpoint = "/api/datastore/products/"
         ret = self._request(endpoint=endpoint)
         return ret
 
@@ -378,4 +401,48 @@ class Netlas:
         """
         endpoint = f"/api/datastore/get_dataset_link/{id}"
         ret = self._request(endpoint=endpoint)
+        return ret
+
+    def scans(self) -> list:
+        endpoint = "/api/scanner/"
+        ret = self._request(endpoint=endpoint)
+        return ret
+
+    def scan_get(self, id: int):
+        endpoint = f"/api/scanner/{id}/"
+        ret = self._request(endpoint=endpoint)
+        return ret
+
+    def scan_create(self, targets: list[str], label: str):
+        params = {
+            "targets": targets,
+            "label": label
+        }
+        endpoint = "/api/scanner/"
+        for ret in self._stream_request(
+            endpoint=endpoint,
+            params=params
+        ):
+            yield ret
+
+    def scan_rename(self, id: int, label: str):  # patch
+        params = {
+            "label": label
+        }
+        endpoint = f"/api/scanner/{id}/"
+        ret = self._request(endpoint=endpoint, params=params, method='patch')
+        return ret
+
+    def scan_delete(self, id: int):  # delete
+        endpoint = f"/api/scanner/{id}/"
+        ret = self._request(endpoint=endpoint, method='delete')
+        return ret
+
+    def scan_priority(self, id: int, shift: int):
+        params = {
+            "id": id,
+            "shift": shift
+        }
+        endpoint = "/api/scanner/change_priority/"
+        ret = self._request(endpoint=endpoint, params=params, method='post')
         return ret
