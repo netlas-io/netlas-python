@@ -43,34 +43,36 @@ class Netlas:
         """
         ret: dict = {}
         try:
-            if method == 'get':
+            if method.lower() == 'get':
                 r = requests.get(
                     f"{self.apibase}{endpoint}",
                     params=params,
                     headers=self.headers,
                     verify=self.verify_ssl,
                 )
-            elif method == 'patch':
+            elif method.lower() == 'patch':
                 r = requests.patch(
                     f"{self.apibase}{endpoint}",
                     json=params,
                     headers=self.headers,
                     verify=self.verify_ssl,
                 )
-            elif method == 'delete':
+            elif method.lower() == 'delete':
                 r = requests.delete(
                     f"{self.apibase}{endpoint}",
                     params=params,
                     headers=self.headers,
                     verify=self.verify_ssl,
                 )
-            elif method == 'post':
+            elif method.lower() == 'post':
                 r = requests.post(
                     f"{self.apibase}{endpoint}",
                     json=params,
                     headers=self.headers,
                     verify=self.verify_ssl
                 )
+            else:
+                raise APIError(f"HTTP method '{method.lower}' is not supported")
         except requests.HTTPError:
             ret["error"] = f"{r.status_code}: {r.reason}"
             if self.debug:
@@ -81,26 +83,27 @@ class Netlas:
         try:
             check_status_code(request=r, debug=self.debug, ret=ret)
         except APIError as api_ex:
-            if throttling is True and retry > 0 and api_ex.value == "Too many requests":
+            if throttling == True and retry > 0 and api_ex.value == "Too many requests":
                 throttling_time = int(r.headers.get('Retry-after', 0))
                 if self.debug:
                     print(f"Throttling request for {throttling_time} seconds", flush=True)
-                    raise ThrottlingError(retry_after=str(throttling_time))
                 time.sleep(throttling_time)
                 return self._request(endpoint=endpoint, params=params, throttling=throttling, retry=retry-1, method=method)
             else:
-                raise api_ex
+                throttling_time = int(r.headers.get('Retry-after', 0))
+                raise ThrottlingError(retry_after=throttling_time)
 
-        try:
-            response_data = json.loads(r.text)
-        except json.JSONDecodeError:
-            ret["error"] = "Failed to parse response data to JSON"
-            if self.debug:
-                ret["error"] += "\nDescription: " + r.reason
-                ret["error"] += "\nData: " + r.text
-            raise APIError(ret["error"])
+        if r.status_code != 204:
+            try:
+                response_data = json.loads(r.text)
+            except json.JSONDecodeError:
+                ret["error"] = "Failed to parse response data to JSON"
+                if self.debug:
+                    ret["error"] += "\nDescription: " + r.reason
+                    ret["error"] += "\nData: " + r.text
+                raise APIError(ret["error"])
 
-        ret = response_data
+            ret = response_data
         return ret
 
     def _stream_request(self, endpoint: str = "/api/", params: object = {}) -> bytes:
@@ -415,15 +418,12 @@ class Netlas:
 
     def scan_create(self, targets: list[str], label: str):
         params = {
-            "targets": targets,
+            "targets": targets.split(','),
             "label": label
         }
         endpoint = "/api/scanner/"
-        for ret in self._stream_request(
-            endpoint=endpoint,
-            params=params
-        ):
-            yield ret
+        ret = self._request(endpoint=endpoint, params=params, method='post')
+        return ret
 
     def scan_rename(self, id: int, label: str):  # patch
         params = {

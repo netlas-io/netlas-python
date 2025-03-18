@@ -546,12 +546,12 @@ def get_dataset(apikey, server, format, id):
 
 
 @main.group()
-def scan():
+def scanner():
     """Manage scans."""
     pass
 
 
-@scan.command("list")
+@scanner.command("list")
 @click.option(
     "-a",
     "--apikey",
@@ -583,7 +583,7 @@ def list_scans(apikey, server, format):
         print(dump_object(ex))
 
 
-@scan.command("get")
+@scanner.command("get")
 @click.option(
     "-a",
     "--apikey",
@@ -620,7 +620,7 @@ def scan_get(apikey, server, format, id):
         print(dump_object(ex))
 
 
-@scan.command("create")
+@scanner.command("create")
 @click.option(
     "-a",
     "--apikey",
@@ -657,18 +657,13 @@ def create_scan(apikey, server, format, targets, label):
     """Create scan."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-        for i, data in enumerate(
-                ns_con.scan_create(
-                    targets=targets.split(','),
-                    label=label
-                )):
-            if i > 0:
-                print(data)
+        res = ns_con.scan_create(targets=targets, label=label)
+        print(dump_object(res))
     except APIError as ex:
         print(dump_object(ex))
 
 
-@scan.command("rename")
+@scanner.command("rename")
 @click.option(
     "-a",
     "--apikey",
@@ -710,7 +705,7 @@ def rename_scan(apikey, server, format, id, label):
         print(dump_object(ex))
 
 
-@scan.command("delete")
+@scanner.command("delete")
 @click.option(
     "-a",
     "--apikey",
@@ -747,7 +742,7 @@ def delete_scan(apikey, server, format, id):
         print(dump_object(ex))
 
 
-@scan.command("priority")
+@scanner.command("priority")
 @click.option(
     "-a",
     "--apikey",

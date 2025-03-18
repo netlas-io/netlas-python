@@ -142,7 +142,9 @@ def dump_object(data, format: str = "json"):
 
 
 def check_status_code(request: Request, debug: bool = False, ret: dict = {}):
-    if request.status_code != 200:
+    success = [200, 201, 202, 204]
+
+    if request.status_code not in success:
         if request.status_code == 401:
             ret["error"] = "Account required"
         elif request.status_code == 402:
