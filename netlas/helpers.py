@@ -129,14 +129,20 @@ class ClickAliasedGroup(Group):
                 formatter.write_dl(rows)
 
 
-def dump_object(data, format: str = "json"):
+def dump_object(data, format: str = "json", disable_colors: bool = False):
     if type(data).__name__ == "APIError":
-        return bcolors.FAIL + str(data) + bcolors.ENDC
+        if not disable_colors:
+            return bcolors.FAIL + str(data) + bcolors.ENDC
+        else:
+            return str(data)
     if format == "json":
         return json.dumps(data)
     elif format == "yaml":
-        return pygments.highlight(yaml.safe_dump(data), YamlLexer(),
-                                  TerminalFormatter())
+        if not disable_colors:
+            return pygments.highlight(yaml.safe_dump(data), YamlLexer(),
+                                      TerminalFormatter())
+        else:
+            return yaml.safe_dump(data)
     else:
         return "Unknown output format"
 

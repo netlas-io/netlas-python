@@ -107,7 +107,12 @@ def savekey(api_key, server):
               default=0,
               show_default=True,
               help="Specify data page")
-def search(datatype, apikey, format, querystring, server, indices, include, exclude, page):
+@click.option("--no-color",
+              "disable_colors",
+              is_flag=True,
+              default=False,
+              help="Disable output colors")
+def search(datatype, apikey, format, querystring, server, indices, include, exclude, page, disable_colors):
     """Search query."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
@@ -117,7 +122,7 @@ def search(datatype, apikey, format, querystring, server, indices, include, excl
                                   indices=indices,
                                   fields=include if include else exclude,
                                   exclude_fields=True if exclude else False)
-        print(dump_object(data=query_res, format=format))
+        print(dump_object(data=query_res, format=format, disable_colors=disable_colors))
     except APIError as ex:
         print(dump_object(ex))
 
@@ -184,6 +189,13 @@ def count(datatype, apikey, querystring, server, format, indices):
     type=click.Choice(["json", "yaml"], case_sensitive=False),
     show_default=True,
 )
+@click.option(
+    "--no-color",
+    "disable_colors",
+    is_flag=True,
+    default=False,
+    help="Disable output colors",
+)
 @click.argument("querystring")
 @click.option(
     "--server",
@@ -214,7 +226,7 @@ def count(datatype, apikey, querystring, server, format, indices):
 @click.option("--indices",
               help="Specify comma-separated data index collections")
 def stat(apikey, querystring, server, format, indices, group_fields, size,
-         index_type):
+         index_type, disable_colors):
     """Get statistics for query."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
@@ -225,7 +237,7 @@ def stat(apikey, querystring, server, format, indices, group_fields, size,
             size=size,
             index_type=index_type,
         )
-        print(dump_object(data=query_res, format=format))
+        print(dump_object(data=query_res, format=format, disable_colors=disable_colors))
     except APIError as ex:
         print(dump_object(ex))
 
@@ -252,12 +264,19 @@ def stat(apikey, querystring, server, format, indices, group_fields, size,
     default="https://app.netlas.io",
     show_default=True,
 )
+@click.option(
+    "--no-color",
+    "disable_colors",
+    is_flag=True,
+    default=False,
+    help="Disable output colors",
+)
 def profile(apikey, server, format):
     """Get user profile data."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
         query_res = ns_con.profile()
-        print(dump_object(data=query_res, format=format))
+        print(dump_object(data=query_res, format=format, disable_colors=disable_colors))
     except APIError as ex:
         print(dump_object(ex))
 
@@ -277,6 +296,13 @@ def profile(apikey, server, format):
     default="yaml",
     type=click.Choice(["json", "yaml"], case_sensitive=False),
     show_default=True,
+)
+@click.option(
+    "--no-color",
+    "disable_colors",
+    is_flag=True,
+    default=False,
+    help="Disable output colors",
 )
 @click.argument("host", required=False, default=None)
 @click.option(
@@ -297,14 +323,14 @@ def profile(apikey, server, format):
               cls=MutuallyExclusiveOption,
               mutually_exclusive=["include", "-i"],
               help="Specify comma-separated fields that will be excluded from the output")
-def host(apikey, format, host, server, include, exclude):
+def host(apikey, format, host, server, include, exclude, disable_colors):
     """Host (ip or domain) information."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
         query_res = ns_con.host(host=host,
                                 fields=include if include else exclude,
                                 exclude_fields=True if exclude else False)
-        print(dump_object(data=query_res, format=format))
+        print(dump_object(data=query_res, format=format, disable_colors=disable_colors))
     except APIError as ex:
         print(dump_object(ex))
 
@@ -380,7 +406,7 @@ def download(
     server,
     indices,
     include,
-    exclude,
+    exclude
 ):
     """Download data of specific query."""
     try:
@@ -460,12 +486,19 @@ def download(
     default="https://app.netlas.io",
     show_default=True,
 )
+@click.option(
+    "--no-color",
+    "disable_colors",
+    is_flag=True,
+    default=False,
+    help="Disable output colors",
+)
 def indices(apikey, server, format):
     """Get available data indices."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
         query_res = ns_con.indices()
-        print(dump_object(data=query_res, format=format))
+        print(dump_object(data=query_res, format=format, disable_colors=disable_colors))
     except APIError as ex:
         print(dump_object(ex))
 
@@ -498,12 +531,19 @@ def datastore():
     default="https://app.netlas.io",
     show_default=True,
 )
-def list_datasets(apikey, server, format):
+@click.option(
+    "--no-color",
+    "disable_colors",
+    is_flag=True,
+    default=False,
+    help="Disable output colors",
+)
+def list_datasets(apikey, server, format, disable_colors):
     """Get all available products."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
         query_res = ns_con.datasets()
-        print(dump_object(data=query_res, format=format))
+        print(dump_object(data=query_res, format=format, disable_colors=disable_colors))
     except APIError as ex:
         print(dump_object(ex))
 
@@ -535,12 +575,19 @@ def list_datasets(apikey, server, format):
     type=int,
     required=True
 )
-def get_dataset(apikey, server, format, id):
+@click.option(
+    "--no-color",
+    "disable_colors",
+    is_flag=True,
+    default=False,
+    help="Disable output colors",
+)
+def get_dataset(apikey, server, format, id, disable_colors):
     """Get download link of `id` dataset."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
         query_res = ns_con.get_dataset_link(id=id)
-        print(dump_object(data=query_res, format=format))
+        print(dump_object(data=query_res, format=format, disable_colors=disable_colors))
     except APIError as ex:
         print(dump_object(ex))
 
@@ -573,12 +620,19 @@ def scanner():
     default="https://app.netlas.io",
     show_default=True,
 )
-def list_scans(apikey, server, format):
+@click.option(
+    "--no-color",
+    "disable_colors",
+    is_flag=True,
+    default=False,
+    help="Disable output colors",
+)
+def list_scans(apikey, server, format, disable_colors):
     """List all existing private scans."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
         res = ns_con.scans()
-        print(dump_object(data=res, format=format))
+        print(dump_object(data=res, format=format, disable_colors=disable_colors))
     except APIError as ex:
         print(dump_object(ex))
 
@@ -610,12 +664,19 @@ def list_scans(apikey, server, format):
     type=int,
     required=True
 )
-def scan_get(apikey, server, format, id):
+@click.option(
+    "--no-color",
+    "disable_colors",
+    is_flag=True,
+    default=False,
+    help="Disable output colors",
+)
+def scan_get(apikey, server, format, id, disable_colors):
     """Get info about scan."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
         res = ns_con.scan_get(id=id)
-        print(dump_object(data=res, format=format))
+        print(dump_object(data=res, format=format, disable_colors=disable_colors))
     except APIError as ex:
         print(dump_object(ex))
 
@@ -653,12 +714,19 @@ def scan_get(apikey, server, format, id):
     help="Name of new scan.",
     required=True
 )
-def create_scan(apikey, server, format, targets, label):
+@click.option(
+    "--no-color",
+    "disable_colors",
+    is_flag=True,
+    default=False,
+    help="Disable output colors",
+)
+def create_scan(apikey, server, format, targets, label, disable_colors):
     """Create scan."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
         res = ns_con.scan_create(targets=targets, label=label)
-        print(dump_object(res))
+        print(dump_object(data=res, format=format, disable_colors=disable_colors))
     except APIError as ex:
         print(dump_object(ex))
 
@@ -695,12 +763,19 @@ def create_scan(apikey, server, format, targets, label):
     help="New of scan name.",
     required=True
 )
-def rename_scan(apikey, server, format, id, label):
+@click.option(
+    "--no-color",
+    "disable_colors",
+    is_flag=True,
+    default=False,
+    help="Disable output colors",
+)
+def rename_scan(apikey, server, format, id, label, disable_colors):
     """Rename scan."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
         res = ns_con.scan_rename(id=id, label=label)
-        print(dump_object(data=res, format=format))
+        print(dump_object(data=res, format=format, disable_colors=disable_colors))
     except APIError as ex:
         print(dump_object(ex))
 
@@ -732,12 +807,19 @@ def rename_scan(apikey, server, format, id, label):
     help="ID of scan",
     required=True
 )
-def delete_scan(apikey, server, format, id):
+@click.option(
+    "--no-color",
+    "disable_colors",
+    is_flag=True,
+    default=False,
+    help="Disable output colors",
+)
+def delete_scan(apikey, server, format, id, disable_colors):
     """Delete scan of `id`."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
         res = ns_con.scan_delete(id=id)
-        print(dump_object(data=res, format=format))
+        print(dump_object(data=res, format=format, disable_colors=disable_colors))
     except APIError as ex:
         print(dump_object(ex))
 
@@ -776,12 +858,19 @@ def delete_scan(apikey, server, format, id):
     type=int,
     required=True
 )
-def priority_scan(apikey, server, format, id, shift):
+@click.option(
+    "--no-color",
+    "disable_colors",
+    is_flag=True,
+    default=False,
+    help="Disable output colors",
+)
+def priority_scan(apikey, server, format, id, shift, disable_colors):
     """Change priority scan of `id`."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
         res = ns_con.scan_priority(id=id, shift=shift)
-        print(dump_object(data=res, format=format))
+        print(dump_object(data=res, format=format, disable_colors=disable_colors))
     except APIError as ex:
         print(dump_object(ex))
 
