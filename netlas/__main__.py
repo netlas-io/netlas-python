@@ -159,16 +159,23 @@ def search(datatype, apikey, format, querystring, server, indices, include, excl
     default="https://app.netlas.io",
     show_default=True,
 )
+@click.option(
+    "--no-color",
+    "disable_colors",
+    is_flag=True,
+    default=False,
+    help="Disable output colors",
+)
 @click.option("--indices",
               help="Specify comma-separated data index collections")
-def count(datatype, apikey, querystring, server, format, indices):
+def count(datatype, apikey, querystring, server, format, indices, disable_colors):
     """Calculate count of query results."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
         query_res = ns_con.count(query=querystring,
                                  datatype=datatype,
                                  indices=indices)
-        print(query_res['count'])
+        print(dump_object(query_res, format=format, disable_colors=disable_colors))
     except APIError as ex:
         print(dump_object(ex))
 
