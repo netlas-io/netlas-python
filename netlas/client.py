@@ -3,7 +3,7 @@ import json
 import time
 from io import TextIOWrapper
 
-from netlas.exception import APIError, ThrottlingError
+from netlas.exception import APIError, ThrottlingError, SDKHTTPError
 from netlas.helpers import check_status_code
 
 
@@ -73,12 +73,12 @@ class Netlas:
                 )
             else:
                 raise APIError(f"HTTP method '{method.lower}' is not supported")
-        except requests.HTTPError:
+        except requests.HTTPError as ex:
             ret["error"] = f"{r.status_code}: {r.reason}"
             if self.debug:
                 ret["error"] += "\nDescription: " + r.reason
                 ret["error"] += "\nData: " + r.text
-            raise APIError(ret["error"])
+            raise SDKHTTPError(ex=ex, value=ret["error"])
 
         try:
             check_status_code(request=r, debug=self.debug, ret=ret)
