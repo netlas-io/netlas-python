@@ -2,15 +2,17 @@
 
 This repository contains Netlas.io Python SDK package with CLI Tool.
 
+**Netlas Python SDK**
+
 The __Netlas Python SDK__ is a software development kit provided by the Netlas team to facilitate the integration of Netlas services into Python applications. The SDK provides a convenient way to interact with the API, performing tasks such as queries, routing and parsing the JSON responses from the Netlas API into Python objects, simplifying the process of integrating Netlas data into Python projects.
 
-To access Netlas using the command line interface, the Netlas team has developed the __Netlas CLI Tool__. With it, you can use Netlas just like any other command line application. This utility is included in the Netlas Python SDK.
+**Netlas CLI Tool**
 
-<span class="hidden">[![License: CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-nd/4.0/)</span>
+To access Netlas using the command line interface, the Netlas team has developed the __Netlas CLI Tool__. With it, you can use Netlas just like any other command line application.
 
 ## Installation
 
-If you have Python installed, simply use the Python package installer to install the SDK and CLI Tool:
+Use the Python package installer to install the SDK and CLI Tool:
 
 ``` bash
 pip install netlas
@@ -22,27 +24,29 @@ Or if you already have it installed and want to upgrade to the latest version:
 pip install --upgrade netlas
 ```
 
-## Checking the installation
-
-Now you can interact with the Netlas platform using command `netlas`.
+If you only need the CLI tool (without the SDK), use the Homebrew package manager:
 
 ``` bash
-netlas
+brew tap netlas-io/netlas 
+brew install netlas
 ```
 
-Try to get information about your external IP address:
+To update homebrew installation to the latest version:
+
+``` bash
+brew update  
+brew upgrade netlas
+```
+
+## Checking the installation
+
+Now you can interact with the Netlas platform using command line. Try to get information about your external IP address:
 
 ``` bash
 netlas host -a "YOUR_API_KEY"
 ```
 
-The same data you should see in the web app if you open [https://app.netlas.io/host/](https://app.netlas.io/host/)
-
-## Additional tools
-
-We recommend using the Netlas CLI in conjunction with the `jq` utility. It is a lightweight and flexible command-line JSON processor, allowing you to perform various manipulations with the output.
-
-Refer to [JQ website](https://jqlang.github.io/jq/download/) for installation instructions.
+❓ [Where to find API key &rarr;](https://docs.netlas.io/automation/how_to_get_api_key/)
 
 ## Setting up API Key
 
