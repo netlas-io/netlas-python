@@ -278,7 +278,7 @@ def stat(apikey, querystring, server, format, indices, group_fields, size,
     default=False,
     help="Disable output colors",
 )
-def profile(apikey, server, format):
+def profile(apikey, server, format, disable_colors):
     """Get user profile data."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
@@ -500,7 +500,7 @@ def download(
     default=False,
     help="Disable output colors",
 )
-def indices(apikey, server, format):
+def indices(apikey, server, format, disable_colors):
     """Get available data indices."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
