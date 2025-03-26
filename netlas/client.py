@@ -3,7 +3,7 @@ import json
 import time
 from io import TextIOWrapper
 
-from netlas.exception import APIError, ThrottlingError, SDKHTTPError
+from netlas.exception import APIError, ThrottlingError
 from netlas.helpers import check_status_code
 
 
@@ -39,6 +39,8 @@ class Netlas:
         :param retry: Retry count, defaults to 1
         :raises APIError: Failed to parse JSON response
         :raises APIError: Other HTTP error
+        :raises HTTPError: Error of HTTP
+        :raises ThrottlingError: Request throttled, rate-limit exceeded
         :return: parsed JSON response
         """
         ret: dict = {}
@@ -78,7 +80,7 @@ class Netlas:
             if self.debug:
                 ret["error"] += "\nDescription: " + r.reason
                 ret["error"] += "\nData: " + r.text
-            raise SDKHTTPError(ex=ex, value=ret["error"])
+            raise ex
 
         try:
             check_status_code(request=r, debug=self.debug, ret=ret)

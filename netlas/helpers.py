@@ -150,7 +150,7 @@ def dump_object(data, format: str = "json", disable_colors: bool = False):
 def check_status_code(request: Request, debug: bool = False, ret: dict = {}):
     success = [200, 201, 202, 204]
     description = {}
-    
+
     if request.status_code not in success:
         if request.status_code == 401:
             ret["error"] = "Account required"
@@ -172,7 +172,7 @@ def check_status_code(request: Request, debug: bool = False, ret: dict = {}):
                 description['type'] = error_text.get('type')
                 description['title'] = error_text.get('title')
                 description['detail'] = error_text.get('detail')
-                
+
                 ret["error"] = error_text["error"] if "error" in error_text.keys() else error_text["detail"]
             except:
                 ret["error"] = f"{request.status_code}: {request.reason}"
