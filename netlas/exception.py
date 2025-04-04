@@ -1,9 +1,11 @@
 class APIError(Exception):
     """Basic Netlas.io Exception class"""
     
-    def __init__(self, value, description={}):
+    def __init__(self, value, err_type = "", detail = ""):
         self.value = value
-        self.description: dict = description
+        self.type = err_type
+        self.title = value
+        self.detail = detail
 
     def __str__(self):
         return self.value

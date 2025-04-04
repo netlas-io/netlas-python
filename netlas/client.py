@@ -84,7 +84,7 @@ class Netlas:
         try:
             check_status_code(request=r, debug=self.debug, ret=ret)
         except APIError as api_ex:
-            if throttling == True and retry > 0 and api_ex.value == "Too many requests":
+            if throttling == True and retry > 0 and api_ex.type == "request_was_throttled":
                 throttling_time = int(r.headers.get('Retry-after', 0))
                 if self.debug:
                     print(f"Throttling request for {throttling_time} seconds", flush=True)

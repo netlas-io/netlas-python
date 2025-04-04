@@ -148,38 +148,24 @@ def dump_object(data, format: str = "json", disable_colors: bool = False):
 
 
 def check_status_code(request: Request, debug: bool = False, ret: dict = {}):
-    success = [200, 201, 202, 204]
-    description = {}
-
-    if request.status_code not in success:
-        if request.status_code == 401:
-            ret["error"] = "Account required"
-        elif request.status_code == 402:
-            ret["error"] = "Insufficiently amount of Netlas Coins"
-        elif request.status_code == 403:
-            ret["error"] = "Account restrictions. Upgrade account to make this request"
-        elif request.status_code == 429:
-            ret["error"] = "Request throttled: Rate-limit exceeded"
-        elif request.status_code in [1006, 1007, 1008, 1106]:
-            ret["error"] = "Your IP address has been temporary banned"
-        elif request.status_code == 524:
-            ret["error"] = "A timeout occurred"
-        elif request.status_code == 521:
-            ret["error"] = "Netlas server is temporary down"
+    if request.status_code >= 400:
+        error = APIError()
+        
+        if request.status_code in [1006, 1007, 1008, 1106]:
+            error.value = "Access Denied"
+            error.type = "ip_banned"
+            error.title = "Access Denied"
+            error.detail = "Your IP address has been temporary banned"
         else:
             try:
                 error_text = json.loads(request.text)
-                description['type'] = error_text.get('type')
-                description['title'] = error_text.get('title')
-                description['detail'] = error_text.get('detail')
-
-                ret["error"] = error_text["error"] if "error" in error_text.keys() else error_text["detail"]
+                error.type = error_text.get('type')
+                error.title = error_text.get('title')
+                error.detail = error_text.get('detail')
             except:
-                ret["error"] = f"{request.status_code}: {request.reason}"
-        if debug:
-            ret["error"] += "\nDescription: " + request.reason
-            ret["error"] += "\nData: " + request.text
-        raise APIError(ret['error'], description)
+                error.value = f"{request.status_code}: {request.reason}"
+                error.detail = request.text
+        raise error
 
 
 def get_api_key():
