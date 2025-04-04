@@ -1,7 +1,6 @@
 import requests
 import json
 import time
-from io import TextIOWrapper
 
 from netlas.exception import APIError, ThrottlingError
 from netlas.helpers import check_status_code
@@ -151,15 +150,20 @@ class Netlas:
         throttling: bool = True,
         retry: int = 1
     ) -> dict:
-        """Send search query to Netlas API
+        """Send search query to Netlas API.
 
         :param query: Search query string
-        :param datatype: Data type (choises: response, cert, domain, whois-ip, whois-domain)
+        :param datatype: Data type (choices: response, cert, domain, whois-ip, whois-domain)
         :param page: Page number of data
         :param indices: Comma-separated IDs of selected data indices (can be retrieved by `indices` method)
         :param fields: Comma-separated list of fields to include/exclude
         :param exclude_fields: Exclude fields from output (instead include)
-        :return: search query result
+        :param throttling: Wait and retry request if 429 error (Too many requests) occurred, defaults to True
+        :param retry: Retry count, defaults to 1
+        :raises APIError: If the API response contains an error or cannot be parsed.
+        :raises ThrottlingError: If the request is throttled and retry attempts are exhausted.
+        :raises HTTPError: If an HTTP error occurs during the request.
+        :return: Search query result.
         """
         endpoint = "/api/responses/"
         if datatype == "cert":
@@ -194,12 +198,17 @@ class Netlas:
         throttling: bool = True,
         retry: int = 1
     ) -> dict:
-        """Calculate total count of query string results
+        """Calculate total count of query string results.
 
         :param query: Search query string
-        :param datatype: Data type (choises: response, cert, domain, whois-ip, whois-domain)
+        :param datatype: Data type (choices: response, cert, domain, whois-ip, whois-domain)
         :param indices: Comma-separated IDs of selected data indices (can be retrieved by `indices` method)
-        :return: JSON object with total count of query string results
+        :param throttling: Wait and retry request if 429 error (Too many requests) occurred, defaults to True
+        :param retry: Retry count, defaults to 1
+        :raises APIError: If the API response contains an error or cannot be parsed.
+        :raises ThrottlingError: If the request is throttled and retry attempts are exhausted.
+        :raises HTTPError: If an HTTP error occurs during the request.
+        :return: JSON object with total count of query string results.
         """
         endpoint = "/api/responses_count/"
         if datatype == "cert":
@@ -231,14 +240,19 @@ class Netlas:
         throttling: bool = True,
         retry: int = 1
     ) -> dict:
-        """Get statistics of responses query string results
+        """Get statistics of responses query string results.
 
         :param query: Search query string
-        :param group_fields: Comma-separated fields using for aggregate data
+        :param group_fields: Comma-separated fields used for aggregating data
         :param indices: Comma-separated IDs of selected data indices (can be retrieved by `indices` method)
         :param size: Aggregation size
-        :param index_type: Index type (choises: responses, certificates, domains)
-        :return: JSON object with statistics of responses query string results
+        :param index_type: Index type (choices: responses, certificates, domains)
+        :param throttling: Wait and retry request if 429 error (Too many requests) occurred, defaults to True
+        :param retry: Retry count, defaults to 1
+        :raises APIError: If the API response contains an error or cannot be parsed.
+        :raises ThrottlingError: If the request is throttled and retry attempts are exhausted.
+        :raises HTTPError: If an HTTP error occurs during the request.
+        :return: JSON object with statistics of responses query string results.
         """
         ret = self._request(
             endpoint="/api/stat/",
@@ -255,9 +269,12 @@ class Netlas:
         return ret
 
     def profile(self) -> dict:
-        """Get user profile data
+        """Get user profile data.
 
-        :return: JSON object with user profile data
+        :raises APIError: If the API response contains an error or cannot be parsed.
+        :raises ThrottlingError: If the request is throttled and retry attempts are exhausted.
+        :raises HTTPError: If an HTTP error occurs during the request.
+        :return: JSON object with user profile data.
         """
         endpoint = "/api/users/current/"
         ret = self._request(endpoint=endpoint)
@@ -271,11 +288,17 @@ class Netlas:
         throttling: bool = True,
         retry: int = 1
     ) -> dict:
-        """Get full information about host (ip or domain)
+        """Get full information about a host (IP or domain).
 
         :param host: IP or domain string
-        :param fields: Comma-separated output fields. If empty it will output all data
-        :return: JSON object with full information about host
+        :param fields: Comma-separated output fields. If empty, it will output all data.
+        :param exclude_fields: Exclude fields from output (instead include)
+        :param throttling: Wait and retry request if 429 error (Too many requests) occurred, defaults to True
+        :param retry: Retry count, defaults to 1
+        :raises APIError: If the API response contains an error or cannot be parsed.
+        :raises ThrottlingError: If the request is throttled and retry attempts are exhausted.
+        :raises HTTPError: If an HTTP error occurs during the request.
+        :return: JSON object with full information about the host.
         """
         endpoint = f"/api/host/{host}" if host else "/api/host/"
         ret = self._request(
@@ -298,15 +321,18 @@ class Netlas:
         size: int = 10,
         indices: str = "",
     ) -> bytes:
-        """Download data from Netlas
+        """Download data from Netlas.
 
         :param query: Search query string
         :param fields: Comma-separated list of fields to include/exclude
         :param exclude_fields: Exclude fields from output (instead include)
         :param datatype: Data type (choices: response, cert, domain, whois-ip, whois-domain)
-        :param size: Download documents count
+        :param size: Number of documents to download
         :param indices: Comma-separated IDs of selected data indices (can be retrieved by `indices` method)
-        :return: Iterator of raw data
+        :raises APIError: If the API response contains an error or cannot be parsed.
+        :raises ThrottlingError: If the request is throttled and retry attempts are exhausted.
+        :raises HTTPError: If an HTTP error occurs during the request.
+        :return: Iterator of raw data.
         """
         endpoint = "/api/responses/download/"
         if datatype == "cert":
@@ -339,14 +365,17 @@ class Netlas:
         datatype: str = "response",
         indices: str = "",
     ) -> bytes:
-        """Download all available data for given query
+        """Download all available data for a given query.
 
         :param query: Search query string
         :param fields: Comma-separated list of fields to include/exclude
         :param exclude_fields: Exclude fields from output (instead include)
         :param datatype: Data type (choices: response, cert, domain, whois-ip, whois-domain)
         :param indices: Comma-separated IDs of selected data indices (can be retrieved by `indices` method)
-        :return: Iterator of raw data
+        :raises APIError: If the API response contains an error or cannot be parsed.
+        :raises ThrottlingError: If the request is throttled and retry attempts are exhausted.
+        :raises HTTPError: If an HTTP error occurs during the request.
+        :return: Iterator of raw data.
         """
         endpoint = "/api/responses/download/"
         if datatype == "cert":
@@ -382,27 +411,34 @@ class Netlas:
             })
 
     def indices(self) -> list:
-        """Get available data indices
+        """Get available data indices.
 
-        :return: List of available indices
+        :raises APIError: If the API response contains an error or cannot be parsed.
+        :raises HTTPError: If an HTTP error occurs during the request.
+        :return: List of available indices.
         """
         endpoint = "/api/indices/"
         ret = self._request(endpoint=endpoint)
         return ret
 
     def datasets(self) -> list:
-        """Get available datasets
+        """Get available datasets.
 
-        :return: List of available datasets with full information
+        :raises APIError: If the API response contains an error or cannot be parsed.
+        :raises HTTPError: If an HTTP error occurs during the request.
+        :return: List of available datasets with full information.
         """
         endpoint = "/api/datastore/products/"
         ret = self._request(endpoint=endpoint)
         return ret
 
     def get_dataset_link(self, id) -> list:
-        """Get link of 'id' dataset
+        """Get the link of a dataset by its ID.
 
-        :return: JSON-object that contains link and name of dataset
+        :param id: Dataset ID
+        :raises APIError: If the API response contains an error or cannot be parsed.
+        :raises HTTPError: If an HTTP error occurs during the request.
+        :return: JSON object containing the link and name of the dataset.
         """
         endpoint = f"/api/datastore/get_dataset_link/{id}"
         ret = self._request(endpoint=endpoint)
