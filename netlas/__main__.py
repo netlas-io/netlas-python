@@ -5,7 +5,7 @@ import os
 from rich.progress import Progress, SpinnerColumn, TimeElapsedColumn, MofNCompleteColumn, TextColumn, BarColumn, TaskProgressColumn, TimeRemainingColumn
 from rich.style import Style
 from netlas.helpers import ClickAliasedGroup, MutuallyExclusiveOption, dump_object, get_api_key
-from netlas.exception import APIError
+from netlas.exception import APIError, ThrottlingError
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
