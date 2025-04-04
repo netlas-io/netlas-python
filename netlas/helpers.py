@@ -6,7 +6,7 @@ import appdirs
 import os
 from click import Option, UsageError, Group
 
-from requests import Request
+from requests import Response
 from pygments.lexers.data import YamlLexer
 from pygments.formatters.terminal import TerminalFormatter
 
@@ -147,24 +147,24 @@ def dump_object(data, format: str = "json", disable_colors: bool = False):
         return "Unknown output format"
 
 
-def check_status_code(request: Request, debug: bool = False, ret: dict = {}):
-    if request.status_code >= 400:
+def check_status_code(response: Response, debug: bool = False, ret: dict = {}):
+    if response.status_code >= 400:
         error = APIError()
-        
-        if request.status_code in [1006, 1007, 1008, 1106]:
+        if response.status_code in [1006, 1007, 1008, 1106]:
             error.value = "Access Denied"
             error.type = "ip_banned"
             error.title = "Access Denied"
             error.detail = "Your IP address has been temporary banned"
         else:
             try:
-                error_text = json.loads(request.text)
+                error_text = json.loads(response.text)
                 error.type = error_text.get('type')
                 error.title = error_text.get('title')
                 error.detail = error_text.get('detail')
+                error.value = error.title if error.title else error.detail
             except:
-                error.value = f"{request.status_code}: {request.reason}"
-                error.detail = request.text
+                error.value = f"{response.status_code}: {response.reason}"
+                error.detail = response.text
         raise error
 
 

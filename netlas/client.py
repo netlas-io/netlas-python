@@ -82,29 +82,31 @@ class Netlas:
             raise ex
 
         try:
-            check_status_code(request=r, debug=self.debug, ret=ret)
+            check_status_code(response=r, debug=self.debug, ret=ret)
         except APIError as api_ex:
-            if throttling == True and retry > 0 and api_ex.type == "request_was_throttled":
-                throttling_time = int(r.headers.get('Retry-after', 0))
-                if self.debug:
-                    print(f"Throttling request for {throttling_time} seconds", flush=True)
-                time.sleep(throttling_time)
-                return self._request(endpoint=endpoint, params=params, throttling=throttling, retry=retry-1, method=method)
+            if api_ex.type == "request_was_throttled":
+                if throttling == True and retry > 0:
+                    throttling_time = int(r.headers.get('Retry-after', 0))
+                    if self.debug:
+                        print(f"Throttling request for {throttling_time} seconds", flush=True)
+                    time.sleep(throttling_time)
+                    return self._request(endpoint=endpoint, params=params, throttling=throttling, retry=retry-1, method=method)
+                else:
+                    throttling_time = int(r.headers.get('Retry-after', 0))
+                    raise ThrottlingError(retry_after=throttling_time)
             else:
-                throttling_time = int(r.headers.get('Retry-after', 0))
-                raise ThrottlingError(retry_after=throttling_time)
+                raise api_ex
 
-        if r.status_code != 204:
-            try:
-                response_data = json.loads(r.text)
-            except json.JSONDecodeError:
-                ret["error"] = "Failed to parse response data to JSON"
-                if self.debug:
-                    ret["error"] += "\nDescription: " + r.reason
-                    ret["error"] += "\nData: " + r.text
-                raise APIError(ret["error"])
+        try:
+            response_data = json.loads(r.text) if r.text else {}
+        except json.JSONDecodeError:
+            ret["error"] = "Failed to parse response data to JSON"
+            if self.debug:
+                ret["error"] += "\nDescription: " + r.reason
+                ret["error"] += "\nData: " + r.text
+            raise APIError(ret["error"])
 
-            ret = response_data
+        ret = response_data
         return ret
 
     def _stream_request(self, endpoint: str = "/api/", params: object = {}) -> bytes:
@@ -127,7 +129,7 @@ class Netlas:
                 stream=True,
                 timeout=60.0
             ) as r:
-                check_status_code(request=r, debug=self.debug, ret=ret)
+                check_status_code(response=r, debug=self.debug, ret=ret)
                 for chunk in r.iter_lines():
                     # skip keep-alive chunks
                     if chunk:
