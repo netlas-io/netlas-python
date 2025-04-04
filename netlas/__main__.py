@@ -546,7 +546,7 @@ def datastore():
     help="Disable output colors",
 )
 def list_datasets(apikey, server, format, disable_colors):
-    """Get all available products."""
+    """Get available datasets."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
         query_res = ns_con.datasets()
@@ -590,7 +590,7 @@ def list_datasets(apikey, server, format, disable_colors):
     help="Disable output colors",
 )
 def get_dataset(apikey, server, format, id, disable_colors):
-    """Get download link of `id` dataset."""
+    """Get the link of a dataset by its ID."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
         query_res = ns_con.get_dataset_link(id=id)
