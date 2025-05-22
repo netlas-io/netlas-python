@@ -46,7 +46,7 @@ Now you can interact with the Netlas platform using command line. Try to get inf
 netlas host -a "YOUR_API_KEY"
 ```
 
-❓ [Where to find API key &rarr;](https://docs.netlas.io/automation/how_to_get_api_key/)
+❓ [Where to find API key &rarr;](https://docs.netlas.io/faq/#api-key)
 
 ## Setting up API Key
 
@@ -119,7 +119,7 @@ Here are a few examples of CLI usage:
   netlas search --datatype domain "domain:*.netlas.io"
   ```
 
-You can find more bash examples on the [Netlas Docs &rarr;](https://docs.netlas.io/automation/).
+You can find more bash examples on the [Netlas Docs &rarr;](https://docs.netlas.io/api-reference/).
 
 ## Python SDK Usage
 
@@ -145,5 +145,5 @@ pass
 
 Please keep in mind that the example is simplified. When developing automation, it is necessary at least to provide procedures for exception handling. And it is also necessary to take into account that the API key may not be saved.
 
-You can find more Python examples on the [Netlas Docs &rarr;](https://docs.netlas.io/automation/).
+You can find more Python examples on the [Netlas Docs &rarr;](https://docs.netlas.io/api-reference/).
 
