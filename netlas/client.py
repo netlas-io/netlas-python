@@ -346,6 +346,9 @@ class Netlas:
         elif datatype == "whois-domain":
             endpoint = "/api/whois_domains/download/"
 
+        if fields == None:  # for non-params cli download
+            fields = ["*"]
+
         for ret in self._stream_request(
             endpoint=endpoint,
             params={
