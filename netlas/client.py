@@ -33,9 +33,10 @@ class Netlas:
         Sends a request to Netlas API endpoint and process result.
 
         :param endpoint: API endpoint
-        :param params: GET parameters for request
+        :param params: HTTP parameters for request
         :param throttling: Wait and retry request if 429 error (Too many requests) occured, defaults to True
         :param retry: Retry count, defaults to 1
+        :param method: HTTP method, defaults to GET
         :raises APIError: Failed to parse JSON response
         :raises APIError: Other HTTP error
         :raises HTTPError: Error of HTTP
@@ -232,7 +233,7 @@ class Netlas:
         )
         return ret
 
-    def stat(
+    def facet(
         self,
         query: str,
         group_fields: str,
@@ -240,7 +241,8 @@ class Netlas:
         size: int = 100,
         index_type: str = "responses",
         throttling: bool = True,
-        retry: int = 1
+        retry: int = 1,
+        datatype: str = ""
     ) -> dict:
         """Get statistics of responses query string results.
 
@@ -256,13 +258,14 @@ class Netlas:
         :raises HTTPError: If an HTTP error occurs during the request.
         :return: JSON object with statistics of responses query string results.
         """
+        endpoint = "/api/responses_facet"
+        if 
         ret = self._request(
-            endpoint="/api/stat/",
+            endpoint="/api/facet/",
             params={
                 "q": query,
                 "size": size,
                 "fields": group_fields,
-                "index_type": index_type,
                 "indices": indices,
             },
             throttling=throttling,
@@ -279,6 +282,20 @@ class Netlas:
         :return: JSON object with user profile data.
         """
         endpoint = "/api/users/current/"
+        ret = self._request(endpoint=endpoint)
+        return ret
+
+    def update_profile(self, first_name, last_name) -> dict:
+        params = {
+            "first_name": f"{first_name}",
+            "last_name": f"{last_name}",
+        }
+        endpoint = "/api/users/current"
+        ret = self._request(endpoint=endpoint, method='patch', params=params)
+        return ret
+
+    def profile_data(self, ) -> dict:
+        endpoint = "/api/users/profile_data/"
         ret = self._request(endpoint=endpoint)
         return ret
 
@@ -440,6 +457,17 @@ class Netlas:
         ret = self._request(endpoint=endpoint)
         return ret
 
+    def dataset_info(self, id) -> list:
+        """Get info about product by `id`
+
+        :raises APIError: If the API response contains an error or cannot be parsed.
+        :raises HTTPError: If an HTTP error occurs during the request.
+        :return: JSON object containing information about dataset.
+        """
+        endpoint = f"/api/datastore/products/{id}"
+        ret = self._request(endpoint=endpoint)
+        return ret
+
     def get_dataset_link(self, id) -> list:
         """Get the link of a dataset by its ID.
 
@@ -491,4 +519,17 @@ class Netlas:
         }
         endpoint = "/api/scanner/change_priority/"
         ret = self._request(endpoint=endpoint, params=params, method='post')
+        return ret
+
+    def mapping(self, datatype: str, facet: bool):
+        """Get mapping of facet or default search.
+
+        :raises APIError: If the API response contains an error or cannot be parsed.
+        :raises HTTPError: If an HTTP error occurs during the request.
+        :return: JSON object with all mapping for default search or facet.
+        """
+        endpoint = f"/api/mapping/{datatype}/"
+        if facet == True:
+            endpoint = endpoint = f"/api/mapping/{datatype}/facet/"
+        ret = self._request(endpoint=endpoint, method='get')
         return ret
