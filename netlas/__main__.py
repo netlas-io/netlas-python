@@ -224,22 +224,22 @@ def count(datatype, apikey, querystring, server, format, indices, disable_colors
 @click.option(
     "-t",
     "--index_type",
-    default="responses",
+    default="response",
     show_default=True,
-    type=click.Choice(["responses", "certificates", "domains"],
+    type=click.Choice(["response", "whois-domain", "domain", "whois-ip"],
                       case_sensitive=False),
     help="Index type",
 )
 @click.option("--indices",
               help="Specify comma-separated data index collections")
-def stat(apikey, querystring, server, format, indices, group_fields, size,
+def facet(apikey, querystring, server, format, indices, group_fields, size,
          index_type, disable_colors):
     """Get statistics for query."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-        query_res = ns_con.stat(
+        query_res = ns_con.facet(
             query=querystring,
-            group_fields=group_fields,
+            facets=group_fields,
             indices=indices,
             size=size,
             index_type=index_type,
@@ -877,6 +877,61 @@ def priority_scan(apikey, server, format, id, shift, disable_colors):
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
         res = ns_con.scan_priority(id=id, shift=shift)
+        print(dump_object(data=res, format=format, disable_colors=disable_colors))
+    except APIError as ex:
+        print(dump_object(ex))
+
+
+@main.command()
+@click.option(
+    "-a",
+    "--apikey",
+    help="User API key (can be saved to system using command `netlas savekey`)",
+    required=False,
+    default=lambda: get_api_key(),
+)
+@click.option(
+    "-f",
+    "--format",
+    help="Output format",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+    show_default=True,
+)
+@click.option(
+    "--server",
+    help="Netlas API server",
+    default="https://app.netlas.io",
+    show_default=True,
+)
+@click.option(
+    "--no-color",
+    "disable_colors",
+    is_flag=True,
+    default=False,
+    help="Disable output colors",
+)
+@click.option(
+    "--facet",
+    "is_facet",
+    is_flag=True,
+    default=False,
+    help="Choose mapping type",
+)
+@click.option(
+    "-d",
+    "--datatype",
+    help="Query data type",
+    type=click.Choice(["response", "domain", "whois-ip",
+                      "whois-domain"], case_sensitive=False),
+    default="response",
+    show_default=True,
+)
+def mapping(apikey, server, format, disable_colors, is_facet, datatype):
+    """Get mapping of index type."""
+    try:
+        ns_con = netlas.Netlas(api_key=apikey, apibase=server)
+        res = ns_con.mapping(datatype=datatype, is_facet=is_facet)
         print(dump_object(data=res, format=format, disable_colors=disable_colors))
     except APIError as ex:
         print(dump_object(ex))

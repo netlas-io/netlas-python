@@ -236,13 +236,12 @@ class Netlas:
     def facet(
         self,
         query: str,
-        group_fields: str,
+        facets: str,
         indices: str = "",
         size: int = 100,
         index_type: str = "responses",
         throttling: bool = True,
         retry: int = 1,
-        datatype: str = ""
     ) -> dict:
         """Get statistics of responses query string results.
 
@@ -258,14 +257,19 @@ class Netlas:
         :raises HTTPError: If an HTTP error occurs during the request.
         :return: JSON object with statistics of responses query string results.
         """
-        endpoint = "/api/responses_facet"
-        if 
+        endpoint = "/api/responses_facet/"
+        if index_type == 'domain':
+            endpoint = "/api/domains_facet/"
+        elif index_type == 'whois-ip':
+            endpoint = "/api/whois_ip_facet/"
+        elif index_type == 'whois-domain':
+            endpoint = "/api/whois_domains_facet/"
         ret = self._request(
-            endpoint="/api/facet/",
+            endpoint=endpoint,
             params={
                 "q": query,
+                "facets": facets,
                 "size": size,
-                "fields": group_fields,
                 "indices": indices,
             },
             throttling=throttling,
@@ -521,15 +525,23 @@ class Netlas:
         ret = self._request(endpoint=endpoint, params=params, method='post')
         return ret
 
-    def mapping(self, datatype: str, facet: bool):
+    def mapping(self, datatype: str, is_facet: bool):
         """Get mapping of facet or default search.
 
         :raises APIError: If the API response contains an error or cannot be parsed.
         :raises HTTPError: If an HTTP error occurs during the request.
         :return: JSON object with all mapping for default search or facet.
         """
+        if datatype == 'response':
+            datatype = 'responses'
+        elif datatype == 'domain':
+            datatype = 'domains'
+        elif datatype == 'whois-domain':
+            datatype = 'whois_domains'
+        elif datatype == 'whois-ip':
+            datatype = 'whois_ip'
         endpoint = f"/api/mapping/{datatype}/"
-        if facet == True:
+        if is_facet == True:
             endpoint = endpoint = f"/api/mapping/{datatype}/facet/"
         ret = self._request(endpoint=endpoint, method='get')
         return ret
