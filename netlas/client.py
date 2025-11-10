@@ -286,7 +286,7 @@ class Netlas:
         :return: JSON object with user profile data.
         """
         endpoint = "/api/users/current/"
-        ret = self._request(endpoint=endpoint)
+        ret = self._request(endpoint=endpoint, throttling=thro)
         return ret
 
     def update_profile(self, first_name, last_name) -> dict:
@@ -516,6 +516,14 @@ class Netlas:
         ret = self._request(endpoint=endpoint, method='delete')
         return ret
 
+    def scan_bulk_delete(self, ids: list):
+        params = {
+            "ids": ids
+        }
+        endpoint = "/api/scanner/bulk/delete"
+        ret = self._request(endpoint=endpoint, method='post', params=params)
+        return ret
+
     def scan_priority(self, id: int, shift: int):
         params = {
             "id": id,
@@ -544,4 +552,49 @@ class Netlas:
         if is_facet == True:
             endpoint = endpoint = f"/api/mapping/{datatype}/facet/"
         ret = self._request(endpoint=endpoint, method='get')
+        return ret
+
+    def discovery_node_count(self, node_type, node_value):
+        params = {
+            "node_type": node_type,
+            "node_value": node_value
+        }
+        endpoint = "/api/discovery/node_count/"
+        ret = self._request(endpoint=endpoint, params=params, method='post')
+        return ret
+
+    def discovery_node_result(self, x_count_id, node_type, node_value, search_field_id):
+        params = {
+            "x_count_id": x_count_id,
+            "node_type": node_type,
+            "node_value": node_value,
+            "search_field_id": search_field_id
+        }
+        endpoint = "/api/discovery/node_result/"
+        ret = self._request(endpoint=endpoint, params=params, method='post')
+        return ret
+
+    def discovery_group_count(self, node_type, node_value):
+        params = {
+            "node_type": node_type,
+            "node_value": node_value
+        }
+        endpoint = "/api/discovery/group_of_nodes_count/"
+        ret = self._request(endpoint=endpoint, params=params, method='post')
+        return ret
+
+    def discovery_group_result(self, x_count_id, node_type, node_value, search_field_id):
+        params = {
+            "x_count_id": x_count_id,
+            "node_type": node_type,
+            "node_value": node_value,
+            "search_field_id": search_field_id
+        }
+        endpoint = "/api/discovery/group_of_nodes_result/"
+        ret = self._request(endpoint=endpoint, params=params, method='post')
+        return ret
+
+    def discovery_status(self, x_count_id):
+        endpoint = f"/api/discovery/node_count/{x_count_id}"
+        ret = self._request(endpoint=endpoint)
         return ret
