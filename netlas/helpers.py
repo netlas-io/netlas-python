@@ -180,3 +180,11 @@ def get_api_key():
     except:
         return None
     return None
+
+
+def get_node_types():
+    return ["address", "as_name", "asn",
+            "dns_txt", "domain", "email",
+            "favicon", "http_tracker", "ip",
+            "ip-range", "jarm", "network_name",
+            "organization", "person", "phone", "text"]
