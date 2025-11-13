@@ -286,15 +286,16 @@ class Netlas:
         :return: JSON object with user profile data.
         """
         endpoint = "/api/users/current/"
-        ret = self._request(endpoint=endpoint, throttling=thro)
+        ret = self._request(endpoint=endpoint)
         return ret
 
     def update_profile(self, first_name, last_name) -> dict:
         params = {
             "first_name": f"{first_name}",
-            "last_name": f"{last_name}",
         }
-        endpoint = "/api/users/current"
+        if last_name != None:
+            params["last_name"] = f"{last_name}"
+        endpoint = "/api/users/current/"
         ret = self._request(endpoint=endpoint, method='patch', params=params)
         return ret
 
@@ -413,7 +414,7 @@ class Netlas:
         elif datatype == "whois-domain":
             endpoint = "/api/whois_domains/download/"
 
-        if fields == None:
+        if fields == None:  # for non-params cli download
             fields = "*"
 
         count = None
@@ -594,7 +595,7 @@ class Netlas:
         ret = self._request(endpoint=endpoint, params=params, method='post')
         return ret
 
-    def discovery_status(self, x_count_id):
-        endpoint = f"/api/discovery/node_count/{x_count_id}"
+    def discovery_status(self, x_stream_id):
+        endpoint = f"/api/discovery/node_count/{x_stream_id}/"
         ret = self._request(endpoint=endpoint)
         return ret
