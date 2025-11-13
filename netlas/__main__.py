@@ -4,7 +4,7 @@ import appdirs
 import os
 from rich.progress import Progress, SpinnerColumn, TimeElapsedColumn, MofNCompleteColumn, TextColumn, BarColumn, TaskProgressColumn, TimeRemainingColumn
 from rich.style import Style
-from netlas.helpers import ClickAliasedGroup, MutuallyExclusiveOption, dump_object, get_api_key
+from netlas.helpers import ClickAliasedGroup, MutuallyExclusiveOption, dump_object, get_api_key, get_node_types
 from netlas.exception import APIError, ThrottlingError
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
@@ -1043,6 +1043,115 @@ def mapping(apikey, server, format, disable_colors, is_facet, datatype):
 def discovery():
     """Attack Surface Discovery methods."""
     pass
+
+
+@discovery.command("searches")
+@click.option(
+    "-a",
+    "--apikey",
+    help="User API key (can be saved to system using command `netlas savekey`)",
+    required=False,
+    default=lambda: get_api_key(),
+)
+@click.option(
+    "-f",
+    "--format",
+    help="Output format",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+    show_default=True,
+)
+@click.option(
+    "--server",
+    help="Netlas API server",
+    default="https://app.netlas.io",
+    show_default=True,
+)
+@click.option(
+    "--no-color",
+    "disable_colors",
+    is_flag=True,
+    default=False,
+    help="Disable output colors",
+)
+@click.option(
+    "-t",
+    "--node-type",
+    "node_type",
+    help="Type of node to search",
+    default="domain",
+    type=click.Choice(get_node_types(), case_sensitive=False),
+    show_default=True,
+    required=True,
+)
+@click.argument("node_value", required=True)
+def discovery_searches(apikey, server, format, disable_colors, node_value, node_type):
+    """Retrieve the current status of an ongoing group search operation."""
+    try:
+        records = node_value.strip(",")
+        ns_con = netlas.Netlas(api_key=apikey, apibase=server)
+        if records > 1:
+            query_res = ns_con.discovery_group_count(node_type=node_type, node_value=node_value)
+        else:
+            query_res = ns_con.discovery_node_count(node_type=node_type, node_value=)
+        print(dump_object(data=query_res, format=format, disable_colors=disable_colors))
+    except APIError as ex:
+        print(dump_object(ex))
+
+
+@discovery.command("fetch")
+@click.option(
+    "-a",
+    "--apikey",
+    help="User API key (can be saved to system using command `netlas savekey`)",
+    required=False,
+    default=lambda: get_api_key(),
+)
+@click.option(
+    "-f",
+    "--format",
+    help="Output format",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+    show_default=True,
+)
+@click.option(
+    "--server",
+    help="Netlas API server",
+    default="https://app.netlas.io",
+    show_default=True,
+)
+@click.option(
+    "--no-color",
+    "disable_colors",
+    is_flag=True,
+    default=False,
+    help="Disable output colors",
+)
+@click.option(
+    "-t",
+    "--node-type",
+    "node_type",
+    help="Type of node to search",
+    default="domain",
+    type=click.Choice(get_node_types(), case_sensitive=False),
+    show_default=True,
+    required=True,
+)
+@click.option(
+    "--search-id",
+    "search_id",
+    help="The ID of search type"
+)
+@click.argument("node_value", required=True, help="A value of the node")
+def discovery_fetch(apikey, server, format, disable_colors, x_stream_id):
+    """Retrieve the current status of an ongoing group search operation."""
+    try:
+        ns_con = netlas.Netlas(api_key=apikey, apibase=server)
+        query_res = ns_con.discovery_status(x_stream_id=x_stream_id)
+        print(dump_object(data=query_res, format=format, disable_colors=disable_colors))
+    except APIError as ex:
+        print(dump_object(ex))
 
 
 @discovery.command("status")
