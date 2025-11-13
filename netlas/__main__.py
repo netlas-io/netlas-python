@@ -908,8 +908,8 @@ def rename_scan(apikey, server, format, id, label, disable_colors):
 )
 @click.option(
     "--id",
-    help="ID of scan",
-    required=True
+    help="ID/IDs of scan, comma-separated",
+    required=True,
 )
 @click.option(
     "--no-color",
@@ -921,8 +921,13 @@ def rename_scan(apikey, server, format, id, label, disable_colors):
 def delete_scan(apikey, server, format, id, disable_colors):
     """Delete scan of `id`."""
     try:
+        ids = id.split(',')
+        click.echo(f"{ids}")
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-        res = ns_con.scan_delete(id=id)
+        if len(ids) > 1:
+            res = ns_con.scan_bulk_delete(ids=ids)
+        else:
+            res = ns_con.scan_delete(id=ids[0])
         print(dump_object(data=res, format=format, disable_colors=disable_colors))
     except APIError as ex:
         print(dump_object(ex))
