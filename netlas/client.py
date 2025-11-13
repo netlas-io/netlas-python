@@ -521,7 +521,7 @@ class Netlas:
         params = {
             "ids": ids
         }
-        endpoint = "/api/scanner/bulk/delete"
+        endpoint = "/api/scanner/bulk_delete/"
         ret = self._request(endpoint=endpoint, method='post', params=params)
         return ret
 
