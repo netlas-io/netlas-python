@@ -249,7 +249,13 @@ def facet(apikey, querystring, server, format, indices, group_fields, size,
         print(dump_object(ex))
 
 
-@main.command()
+@main.group()
+def profile():
+    """Manage user profile."""
+    pass
+
+
+@profile.command("info")
 @click.option(
     "-a",
     "--apikey",
@@ -278,11 +284,102 @@ def facet(apikey, querystring, server, format, indices, group_fields, size,
     default=False,
     help="Disable output colors",
 )
-def profile(apikey, server, format, disable_colors):
+def profile_info(apikey, server, format, disable_colors):
     """Get user profile data."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
         query_res = ns_con.profile()
+        print(dump_object(data=query_res, format=format, disable_colors=disable_colors))
+    except APIError as ex:
+        print(dump_object(ex))
+
+
+@profile.command("update")
+@click.option(
+    "-a",
+    "--apikey",
+    help="User API key (can be saved to system using command `netlas savekey`)",
+    required=False,
+    default=lambda: get_api_key(),
+)
+@click.option(
+    "-f",
+    "--format",
+    help="Output format",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+    show_default=True,
+)
+@click.option(
+    "--server",
+    help="Netlas API server",
+    default="https://app.netlas.io",
+    show_default=True,
+)
+@click.option(
+    "--no-color",
+    "disable_colors",
+    is_flag=True,
+    default=False,
+    help="Disable output colors",
+)
+@click.option(
+    "--first",
+    "first_name",
+    required=True,
+    help="First name for profile.",
+)
+@click.option(
+    "--last",
+    "last_name",
+    default=None,
+    required=False,
+    help="Last name for profile.",
+)
+def update_profile(apikey, server, format, disable_colors, first_name, last_name):
+    """Update user profile."""
+    try:
+        ns_con = netlas.Netlas(api_key=apikey, apibase=server)
+        query_res = ns_con.update_profile(first_name=first_name, last_name=last_name)
+        print(dump_object(data=query_res, format=format, disable_colors=disable_colors))
+    except APIError as ex:
+        print(dump_object(ex))
+
+
+@profile.command("counters")
+@click.option(
+    "-a",
+    "--apikey",
+    help="User API key (can be saved to system using command `netlas savekey`)",
+    required=False,
+    default=lambda: get_api_key(),
+)
+@click.option(
+    "-f",
+    "--format",
+    help="Output format",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+    show_default=True,
+)
+@click.option(
+    "--server",
+    help="Netlas API server",
+    default="https://app.netlas.io",
+    show_default=True,
+)
+@click.option(
+    "--no-color",
+    "disable_colors",
+    is_flag=True,
+    default=False,
+    help="Disable output colors",
+)
+def counters_profile(apikey, server, format, disable_colors):
+    """Update user profile."""
+    try:
+        ns_con = netlas.Netlas(api_key=apikey, apibase=server)
+        query_res = ns_con.profile_data()
         print(dump_object(data=query_res, format=format, disable_colors=disable_colors))
     except APIError as ex:
         print(dump_object(ex))
@@ -933,6 +1030,52 @@ def mapping(apikey, server, format, disable_colors, is_facet, datatype):
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
         res = ns_con.mapping(datatype=datatype, is_facet=is_facet)
         print(dump_object(data=res, format=format, disable_colors=disable_colors))
+    except APIError as ex:
+        print(dump_object(ex))
+
+
+@main.group()
+def discovery():
+    """Attack Surface Discovery methods."""
+    pass
+
+
+@discovery.command("status")
+@click.option(
+    "-a",
+    "--apikey",
+    help="User API key (can be saved to system using command `netlas savekey`)",
+    required=False,
+    default=lambda: get_api_key(),
+)
+@click.option(
+    "-f",
+    "--format",
+    help="Output format",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+    show_default=True,
+)
+@click.option(
+    "--server",
+    help="Netlas API server",
+    default="https://app.netlas.io",
+    show_default=True,
+)
+@click.option(
+    "--no-color",
+    "disable_colors",
+    is_flag=True,
+    default=False,
+    help="Disable output colors",
+)
+@click.argument("x_stream_id", required=True, default=None)
+def discovery_status(apikey, server, format, disable_colors, x_stream_id):
+    """Retrieve the current status of an ongoing group search operation."""
+    try:
+        ns_con = netlas.Netlas(api_key=apikey, apibase=server)
+        query_res = ns_con.discovery_status(x_stream_id=x_stream_id)
+        print(dump_object(data=query_res, format=format, disable_colors=disable_colors))
     except APIError as ex:
         print(dump_object(ex))
 
