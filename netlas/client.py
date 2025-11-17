@@ -392,6 +392,9 @@ class Netlas:
         elif datatype == "whois-domain":
             endpoint = "/api/whois_domains/download/"
 
+        if fields == None:
+            fields = "*"
+
         count = None
         count_res = self.count(query=query, datatype=datatype, indices=indices)
         if count_res["count"] > 0:
