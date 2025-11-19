@@ -4,7 +4,7 @@ import appdirs
 import os
 from rich.progress import Progress, SpinnerColumn, TimeElapsedColumn, MofNCompleteColumn, TextColumn, BarColumn, TaskProgressColumn, TimeRemainingColumn
 from rich.style import Style
-from netlas.helpers import ClickAliasedGroup, MutuallyExclusiveOption, dump_object, get_api_key, get_node_types
+from netlas.helpers import ClickAliasedGroup, MutuallyExclusiveOption, dump_object, get_api_key
 from netlas.exception import APIError, ThrottlingError
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
@@ -13,6 +13,7 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
 @click.group(context_settings=CONTEXT_SETTINGS, cls=ClickAliasedGroup)
+@click.version_option()
 def main():
     pass
 
@@ -1080,7 +1081,7 @@ def discovery():
     "node_type",
     help="Type of node to search",
     default="domain",
-    type=click.Choice(get_node_types(), case_sensitive=False),
+    type=click.Choice(["address", "as_name", "asn", "dns_txt", "domain", "email", "favicon", "http_tracker", "ip", "ip-range", "jarm", "network_name", "organization", "person", "phone", "text"], case_sensitive=False),
     show_default=True,
     required=True,
 )
@@ -1093,7 +1094,7 @@ def discovery_searches(apikey, server, format, disable_colors, node_value, node_
         if records > 1:
             query_res = ns_con.discovery_group_count(node_type=node_type, node_value=node_value)
         else:
-            query_res = ns_con.discovery_node_count(node_type=node_type, node_value=)
+            query_res = ns_con.discovery_node_count(node_type=node_type, node_value=node_value)
         print(dump_object(data=query_res, format=format, disable_colors=disable_colors))
     except APIError as ex:
         print(dump_object(ex))
@@ -1134,7 +1135,7 @@ def discovery_searches(apikey, server, format, disable_colors, node_value, node_
     "node_type",
     help="Type of node to search",
     default="domain",
-    type=click.Choice(get_node_types(), case_sensitive=False),
+    type=click.Choice(["address", "as_name", "asn", "dns_txt", "domain", "email", "favicon", "http_tracker", "ip", "ip-range", "jarm", "network_name", "organization", "person", "phone", "text"], case_sensitive=False),
     show_default=True,
     required=True,
 )
@@ -1143,7 +1144,7 @@ def discovery_searches(apikey, server, format, disable_colors, node_value, node_
     "search_id",
     help="The ID of search type"
 )
-@click.argument("node_value", required=True, help="A value of the node")
+@click.argument("node_value", required=True)
 def discovery_fetch(apikey, server, format, disable_colors, x_stream_id):
     """Retrieve the current status of an ongoing group search operation."""
     try:

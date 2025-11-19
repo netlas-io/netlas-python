@@ -12,7 +12,6 @@ from pygments.formatters.terminal import TerminalFormatter
 
 from netlas.exception import APIError
 
-
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -180,11 +179,3 @@ def get_api_key():
     except:
         return None
     return None
-
-
-def get_node_types():
-    return ["address", "as_name", "asn",
-            "dns_txt", "domain", "email",
-            "favicon", "http_tracker", "ip",
-            "ip-range", "jarm", "network_name",
-            "organization", "person", "phone", "text"]
