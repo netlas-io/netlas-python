@@ -469,7 +469,7 @@ class Netlas:
         :raises HTTPError: If an HTTP error occurs during the request.
         :return: JSON object containing information about dataset.
         """
-        endpoint = f"/api/datastore/products/{id}"
+        endpoint = f"/api/datastore/products/{id}/"
         ret = self._request(endpoint=endpoint)
         return ret
 
@@ -481,7 +481,7 @@ class Netlas:
         :raises HTTPError: If an HTTP error occurs during the request.
         :return: JSON object containing the link and name of the dataset.
         """
-        endpoint = f"/api/datastore/get_dataset_link/{id}"
+        endpoint = f"/api/datastore/get_dataset_link/{id}/"
         ret = self._request(endpoint=endpoint)
         return ret
 
@@ -551,7 +551,7 @@ class Netlas:
             datatype = 'whois_ip'
         endpoint = f"/api/mapping/{datatype}/"
         if is_facet == True:
-            endpoint = endpoint = f"/api/mapping/{datatype}/facet/"
+            endpoint = f"/api/mapping/{datatype}/facet/"
         ret = self._request(endpoint=endpoint, method='get')
         return ret
 
