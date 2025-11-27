@@ -233,12 +233,12 @@ def count(datatype, apikey, querystring, server, format, indices, disable_colors
 )
 @click.option("--indices",
               help="Specify comma-separated data index collections")
-def facet(apikey, querystring, server, format, indices, group_fields, size,
+def stat(apikey, querystring, server, format, indices, group_fields, size,
          index_type, disable_colors):
     """Get statistics for query."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-        query_res = ns_con.facet(
+        query_res = ns_con.stat(
             query=querystring,
             facets=group_fields,
             indices=indices,
@@ -643,11 +643,15 @@ def datastore():
     default=False,
     help="Disable output colors",
 )
-def list_datasets(apikey, server, format, disable_colors):
+@click.argument("id", required=False)
+def list_datasets(apikey, server, format, disable_colors, id):
     """Get available datasets."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-        query_res = ns_con.datasets()
+        if id == None:
+            query_res = ns_con.datasets()
+        else:
+            query_res = ns_con.dataset_info(id=id)
         print(dump_object(data=query_res, format=format, disable_colors=disable_colors))
     except APIError as ex:
         print(dump_object(ex))
@@ -815,7 +819,7 @@ def scan_get(apikey, server, format, id, disable_colors):
     type=str
 )
 @click.option(
-    "--label",
+    "--name",
     help="Name of new scan.",
     required=True
 )
@@ -826,11 +830,11 @@ def scan_get(apikey, server, format, id, disable_colors):
     default=False,
     help="Disable output colors",
 )
-def create_scan(apikey, server, format, targets, label, disable_colors):
+def create_scan(apikey, server, format, targets, name, disable_colors):
     """Create scan."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-        res = ns_con.scan_create(targets=targets, label=label)
+        res = ns_con.scan_create(targets=targets, name=name)
         print(dump_object(data=res, format=format, disable_colors=disable_colors))
     except APIError as ex:
         print(dump_object(ex))
@@ -864,7 +868,7 @@ def create_scan(apikey, server, format, targets, label, disable_colors):
     required=True
 )
 @click.option(
-    "--label",
+    "--name",
     help="New of scan name.",
     required=True
 )
@@ -875,11 +879,11 @@ def create_scan(apikey, server, format, targets, label, disable_colors):
     default=False,
     help="Disable output colors",
 )
-def rename_scan(apikey, server, format, id, label, disable_colors):
+def rename_scan(apikey, server, format, id, name, disable_colors):
     """Rename scan."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-        res = ns_con.scan_rename(id=id, label=label)
+        res = ns_con.scan_rename(id=id, name=name)
         print(dump_object(data=res, format=format, disable_colors=disable_colors))
     except APIError as ex:
         print(dump_object(ex))
@@ -923,7 +927,6 @@ def delete_scan(apikey, server, format, id, disable_colors):
     """Delete scan of `id`."""
     try:
         ids = id.split(',')
-        click.echo(f"{ids}")
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
         if len(ids) > 1:
             res = ns_con.scan_bulk_delete(ids=ids)
@@ -1087,11 +1090,11 @@ def discovery():
 )
 @click.argument("node_value", required=True)
 def discovery_searches(apikey, server, format, disable_colors, node_value, node_type):
-    """Retrieve the current status of an ongoing group search operation."""
+    """Retrieve a list of available searches for a node/group of nodes."""
     try:
-        records = node_value.strip(",")
+        records = node_value.split(",")
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-        if records > 1:
+        if len(records) > 1:
             query_res = ns_con.discovery_group_count(node_type=node_type, node_value=node_value)
         else:
             query_res = ns_con.discovery_node_count(node_type=node_type, node_value=node_value)
@@ -1142,14 +1145,25 @@ def discovery_searches(apikey, server, format, disable_colors, node_value, node_
 @click.option(
     "--search-id",
     "search_id",
-    help="The ID of search type"
+    help="The ID of search type",
+    required=True
+)
+@click.option(
+    "--count-id",
+    "count_id",
+    help="Header of available searches associated with a node or group using this ID",
+    required=True
 )
 @click.argument("node_value", required=True)
-def discovery_fetch(apikey, server, format, disable_colors, x_stream_id):
-    """Retrieve the current status of an ongoing group search operation."""
+def discovery_fetch(apikey, server, format, disable_colors, search_id, node_value, node_type, count_id):
+    """Execute a search for a node/grop and retrieve the corresponding results."""
     try:
+        records = node_value.split(",")
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-        query_res = ns_con.discovery_status(x_stream_id=x_stream_id)
+        if len(records) > 1:
+            query_res = ns_con.discovery_group_result(x_count_id=count_id, node_type=node_type, node_value=node_value, search_field_id=search_id)
+        else:
+            query_res = ns_con.discovery_node_result(x_count_id=count_id, node_type=node_type, node_value=node_value, search_field_id=search_id)
         print(dump_object(data=query_res, format=format, disable_colors=disable_colors))
     except APIError as ex:
         print(dump_object(ex))
@@ -1184,12 +1198,16 @@ def discovery_fetch(apikey, server, format, disable_colors, x_stream_id):
     default=False,
     help="Disable output colors",
 )
-@click.argument("x_stream_id", required=True, default=None)
-def discovery_status(apikey, server, format, disable_colors, x_stream_id):
+@click.option(
+    "--stream-id",
+    required=True,
+    help="The unique identifier of a stream used to track the progress."
+)
+def discovery_status(apikey, server, format, disable_colors, stream_id):
     """Retrieve the current status of an ongoing group search operation."""
     try:
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-        query_res = ns_con.discovery_status(x_stream_id=x_stream_id)
+        query_res = ns_con.discovery_status(x_stream_id=stream_id)
         print(dump_object(data=query_res, format=format, disable_colors=disable_colors))
     except APIError as ex:
         print(dump_object(ex))

@@ -28,7 +28,7 @@ class Netlas:
         self.headers = {"Content-Type": "application/json",
                         "X-Api-Key": self.api_key}
 
-    def _request(self, endpoint: str = "/api/", params: object = {}, throttling: bool = True, retry: int = 1, method: str = 'get') -> dict:
+    def _request(self, endpoint: str = "/api/", params: object = {}, throttling: bool = True, retry: int = 1, method: str = 'get', ext_headers: dict = {}) -> dict:
         """Private requests wrapper.
         Sends a request to Netlas API endpoint and process result.
 
@@ -49,28 +49,28 @@ class Netlas:
                 r = requests.get(
                     f"{self.apibase}{endpoint}",
                     params=params,
-                    headers=self.headers,
+                    headers=self.headers | ext_headers,
                     verify=self.verify_ssl,
                 )
             elif method.lower() == 'patch':
                 r = requests.patch(
                     f"{self.apibase}{endpoint}",
                     json=params,
-                    headers=self.headers,
+                    headers=self.headers | ext_headers,
                     verify=self.verify_ssl,
                 )
             elif method.lower() == 'delete':
                 r = requests.delete(
                     f"{self.apibase}{endpoint}",
                     params=params,
-                    headers=self.headers,
+                    headers=self.headers | ext_headers,
                     verify=self.verify_ssl,
                 )
             elif method.lower() == 'post':
                 r = requests.post(
                     f"{self.apibase}{endpoint}",
                     json=params,
-                    headers=self.headers,
+                    headers=self.headers | ext_headers,
                     verify=self.verify_ssl
                 )
             else:
@@ -110,7 +110,7 @@ class Netlas:
         ret = response_data
         return ret
 
-    def _stream_request(self, endpoint: str = "/api/", params: object = {}) -> bytes:
+    def _stream_request(self, endpoint: str = "/api/", params: object = {}, ext_headers: dict = {}) -> bytes:
         """Private stream requests wrapper.
         Sends a request to Netlas API endpoint and yield data from stream.
 
@@ -125,7 +125,7 @@ class Netlas:
             with requests.post(
                 f"{self.apibase}{endpoint}",
                 json=params,
-                headers=self.headers,
+                headers=self.headers | ext_headers,
                 verify=self.verify_ssl,
                 stream=True,
                 timeout=60.0
@@ -233,7 +233,7 @@ class Netlas:
         )
         return ret
 
-    def facet(
+    def stat(
         self,
         query: str,
         facets: str,
@@ -495,18 +495,18 @@ class Netlas:
         ret = self._request(endpoint=endpoint)
         return ret
 
-    def scan_create(self, targets: list[str], label: str):
+    def scan_create(self, targets: list[str], name: str):
         params = {
             "targets": targets.split(','),
-            "label": label
+            "name": name
         }
         endpoint = "/api/scanner/"
         ret = self._request(endpoint=endpoint, params=params, method='post')
         return ret
 
-    def scan_rename(self, id: int, label: str):  # patch
+    def scan_rename(self, id: int, name: str):  # patch
         params = {
-            "label": label
+            "name": name
         }
         endpoint = f"/api/scanner/{id}/"
         ret = self._request(endpoint=endpoint, params=params, method='patch')
@@ -572,7 +572,10 @@ class Netlas:
             "search_field_id": search_field_id
         }
         endpoint = "/api/discovery/node_result/"
-        ret = self._request(endpoint=endpoint, params=params, method='post')
+        header = {
+            'X-Count-Id': x_count_id
+        }
+        ret = self._request(endpoint=endpoint, params=params, method='post', ext_headers=header)
         return ret
 
     def discovery_group_count(self, node_type, node_value):
@@ -591,8 +594,11 @@ class Netlas:
             "node_value": node_value,
             "search_field_id": search_field_id
         }
+        header = {
+            'X-Count-Id': x_count_id
+        }
         endpoint = "/api/discovery/group_of_nodes_result/"
-        ret = self._request(endpoint=endpoint, params=params, method='post')
+        ret = self._request(endpoint=endpoint, params=params, method='post', ext_headers=header)
         return ret
 
     def discovery_status(self, x_stream_id):
