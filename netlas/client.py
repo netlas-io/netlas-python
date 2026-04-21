@@ -28,7 +28,7 @@ class Netlas:
         self.headers = {"Content-Type": "application/json",
                         "X-Api-Key": self.api_key}
 
-    def _request(self, endpoint: str = "/api/", params: object = {}, throttling: bool = True, retry: int = 1, method: str = 'get', ext_headers: dict = {}) -> dict:
+    def _request(self, endpoint: str = "/api/", params: object = {}, throttling: bool = True, retry: int = 1, method: str = 'get', ext_headers: dict = {}, return_headers: bool = False) -> dict:
         """Private requests wrapper.
         Sends a request to Netlas API endpoint and process result.
 
@@ -91,15 +91,25 @@ class Netlas:
                     if self.debug:
                         print(f"Throttling request for {throttling_time} seconds", flush=True)
                     time.sleep(throttling_time)
-                    return self._request(endpoint=endpoint, params=params, throttling=throttling, retry=retry-1, method=method)
+                    return self._request(endpoint=endpoint, params=params, throttling=throttling, retry=retry-1, method=method, return_headers=return_headers)
                 else:
                     throttling_time = int(r.headers.get('Retry-after', 0))
                     raise ThrottlingError(retry_after=throttling_time)
             else:
                 raise api_ex
-
         try:
-            response_data = json.loads(r.text) if r.text else {}
+            content_type = r.headers.get("Content-Type", "")
+            if not r.text:
+                response_data = {}
+            elif "application/x-ndjson" in content_type:
+                response_data = [
+                    json.loads(line)
+                    for line in r.text.splitlines()
+                    if line.strip()
+                ]
+            else:
+                response_data = json.loads(r.text)
+
         except json.JSONDecodeError:
             ret["error"] = "Failed to parse response data to JSON"
             if self.debug:
@@ -107,6 +117,11 @@ class Netlas:
                 ret["error"] += "\nData: " + r.text
             raise APIError(ret["error"])
 
+        if return_headers:
+            return {
+                "data": response_data,
+                "headers": dict(r.headers),
+            }
         ret = response_data
         return ret
 
@@ -534,6 +549,11 @@ class Netlas:
         ret = self._request(endpoint=endpoint, params=params, method='post')
         return ret
 
+    def get_scan_report(self, id: int):
+        endpoint = f"/api/scanner/{id}/report"
+        ret = self._request(endpoint=endpoint, method='get')
+        return ret
+
     def mapping(self, datatype: str, is_facet: bool):
         """Get mapping of facet or default search.
 
@@ -561,12 +581,16 @@ class Netlas:
             "node_value": node_value
         }
         endpoint = "/api/discovery/node_count/"
-        ret = self._request(endpoint=endpoint, params=params, method='post')
+        resp = self._request(endpoint=endpoint, params=params, method='post', return_headers=True)
+        headers = resp.get("headers", {})
+        ret = {
+            "x_count_id": headers.get("X-Count-Id"),
+            "data": resp.get("data"),
+        }
         return ret
 
     def discovery_node_result(self, x_count_id, node_type, node_value, search_field_id):
         params = {
-            "x_count_id": x_count_id,
             "node_type": node_type,
             "node_value": node_value,
             "search_field_id": search_field_id
@@ -579,26 +603,46 @@ class Netlas:
         return ret
 
     def discovery_group_count(self, node_type, node_value):
-        params = {
-            "node_type": node_type,
-            "node_value": node_value
-        }
-        endpoint = "/api/discovery/group_of_nodes_count/"
-        ret = self._request(endpoint=endpoint, params=params, method='post')
-        return ret
+        if isinstance(node_value, str):
+            node_value = [v.strip() for v in node_value.split(",") if v.strip()]
 
-    def discovery_group_result(self, x_count_id, node_type, node_value, search_field_id):
         params = {
-            "x_count_id": x_count_id,
             "node_type": node_type,
             "node_value": node_value,
-            "search_field_id": search_field_id
+        }
+        endpoint = "/api/discovery/group_of_nodes_count/"
+        resp = self._request(
+            endpoint=endpoint,
+            params=params,
+            method="post",
+            return_headers=True,
+        )
+
+        headers = {k.lower(): v for k, v in resp.get("headers", {}).items()}
+        return {
+            "x_count_id": headers.get("x-count-id"),
+            "data": resp.get("data"),
+        }
+
+    def discovery_group_result(self, x_count_id, node_type, node_value, search_field_id):
+        if isinstance(node_value, str):
+            node_value = [v.strip() for v in node_value.split(",") if v.strip()]
+
+        params = {
+            "node_type": node_type,
+            "node_value": node_value,
+            "search_field_id": search_field_id,
         }
         header = {
-            'X-Count-Id': x_count_id
+            "X-Count-Id": x_count_id
         }
         endpoint = "/api/discovery/group_of_nodes_result/"
-        ret = self._request(endpoint=endpoint, params=params, method='post', ext_headers=header)
+        ret = self._request(
+            endpoint=endpoint,
+            params=params,
+            method="post",
+            ext_headers=header,
+        )
         return ret
 
     def discovery_status(self, x_stream_id):
