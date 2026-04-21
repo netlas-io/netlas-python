@@ -181,7 +181,7 @@ def count(datatype, apikey, querystring, server, format, indices, disable_colors
         print(dump_object(ex))
 
 
-@main.command()
+@main.command(aliases=['facet'])
 @click.option(
     "-a",
     "--apikey",
@@ -988,6 +988,51 @@ def priority_scan(apikey, server, format, id, shift, disable_colors):
         print(dump_object(ex))
 
 
+@scanner.command("report")
+@click.option(
+    "-a",
+    "--apikey",
+    help="User API key (can be saved to system using command `netlas savekey`)",
+    required=False,
+    default=lambda: get_api_key(),
+)
+@click.option(
+    "-f",
+    "--format",
+    help="Output format",
+    default="yaml",
+    type=click.Choice(["json", "yaml"], case_sensitive=False),
+    show_default=True,
+)
+@click.option(
+    "--server",
+    help="Netlas API server",
+    default="https://app.netlas.io",
+    show_default=True,
+)
+@click.option(
+    "--id",
+    help="ID of scan",
+    required=True,
+    type=int,
+)
+@click.option(
+    "--no-color",
+    "disable_colors",
+    is_flag=True,
+    default=False,
+    help="Disable output colors",
+)
+def report_scan(apikey, server, format, id, disable_colors):
+    """Get report scan of `id`."""
+    try:
+        ns_con = netlas.Netlas(api_key=apikey, apibase=server)
+        res = ns_con.get_scan_report(id=id)
+        print(dump_object(data=res, format=format, disable_colors=disable_colors))
+    except APIError as ex:
+        print(dump_object(ex))
+
+
 @main.command()
 @click.option(
     "-a",
@@ -1092,13 +1137,15 @@ def discovery():
 def discovery_searches(apikey, server, format, disable_colors, node_value, node_type):
     """Retrieve a list of available searches for a node/group of nodes."""
     try:
-        records = node_value.split(",")
+        records = [v.strip() for v in node_value.split(",") if v.strip()]
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
+
         if len(records) > 1:
-            query_res = ns_con.discovery_group_count(node_type=node_type, node_value=node_value)
+            query_res = ns_con.discovery_group_count(node_type=node_type, node_value=records)
         else:
             query_res = ns_con.discovery_node_count(node_type=node_type, node_value=node_value)
-        print(dump_object(data=query_res, format=format, disable_colors=disable_colors))
+
+        print(dump_object(data=query_res["data"], format=format, disable_colors=disable_colors))
     except APIError as ex:
         print(dump_object(ex))
 
@@ -1146,24 +1193,37 @@ def discovery_searches(apikey, server, format, disable_colors, node_value, node_
     "--search-id",
     "search_id",
     help="The ID of search type",
-    required=True
+    required=True,
 )
 @click.option(
-    "--count-id",
-    "count_id",
-    help="Header of available searches associated with a node or group using this ID",
-    required=True
+    '--node-value',
+    "node_value",
+    help="Records for fetch",
+    required=True,
 )
-@click.argument("node_value", required=True)
-def discovery_fetch(apikey, server, format, disable_colors, search_id, node_value, node_type, count_id):
-    """Execute a search for a node/grop and retrieve the corresponding results."""
+
+
+def discovery_fetch(apikey, server, format, disable_colors, search_id, node_value, node_type):
+    """Execute a search for a node/group and retrieve the corresponding results."""
     try:
-        records = node_value.split(",")
+        records = [v.strip() for v in node_value.split(",") if v.strip()]
         ns_con = netlas.Netlas(api_key=apikey, apibase=server)
+
         if len(records) > 1:
-            query_res = ns_con.discovery_group_result(x_count_id=count_id, node_type=node_type, node_value=node_value, search_field_id=search_id)
+            count_res = ns_con.discovery_group_count(node_type=node_type, node_value=records)
+            count_id = count_res.get("x_count_id")
+            if not count_id:
+                raise APIError("X-Count-Id header was not returned by discovery group count")
+
+            query_res = ns_con.discovery_group_result(x_count_id=count_id, node_type=node_type, node_value=records, search_field_id=search_id)
         else:
+            count_res = ns_con.discovery_node_count(node_type=node_type, node_value=node_value)
+            count_id = count_res.get("x_count_id")
+            if not count_id:
+                raise APIError("X-Count-Id header was not returned by discovery node count")
+
             query_res = ns_con.discovery_node_result(x_count_id=count_id, node_type=node_type, node_value=node_value, search_field_id=search_id)
+
         print(dump_object(data=query_res, format=format, disable_colors=disable_colors))
     except APIError as ex:
         print(dump_object(ex))
