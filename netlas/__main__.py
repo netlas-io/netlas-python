@@ -4,8 +4,10 @@ import appdirs
 import os
 from rich.progress import Progress, SpinnerColumn, TimeElapsedColumn, MofNCompleteColumn, TextColumn, BarColumn, TaskProgressColumn, TimeRemainingColumn
 from rich.style import Style
+from rich.console import Console
 from netlas.helpers import ClickAliasedGroup, MutuallyExclusiveOption, dump_object, get_api_key
 from netlas.exception import APIError, ThrottlingError
+from time import sleep
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
@@ -1134,7 +1136,13 @@ def discovery():
     required=True,
 )
 @click.argument("node_value", required=True)
-def discovery_searches(apikey, server, format, disable_colors, node_value, node_type):
+@click.option(
+    "--disable-status",
+    is_flag=True,
+    default=False,
+    help="Disable progress status output",
+)
+def discovery_searches(apikey, server, format, disable_colors, node_value, node_type, disable_status):
     """Retrieve a list of available searches for a node/group of nodes."""
     try:
         records = [v.strip() for v in node_value.split(",") if v.strip()]
@@ -1144,6 +1152,66 @@ def discovery_searches(apikey, server, format, disable_colors, node_value, node_
             query_res = ns_con.discovery_group_count(node_type=node_type, node_value=records)
         else:
             query_res = ns_con.discovery_node_count(node_type=node_type, node_value=node_value)
+
+        x_stream_id = query_res.get("x_stream_id")
+
+        if x_stream_id and not disable_status:
+            bar_style = Style(color="bright_white", blink=False, bold=True)
+            bar_complete_style = Style(color="dodger_blue1", blink=False, bold=True)
+            bar_finished_style = Style(color="dodger_blue2", blink=False, bold=True)
+
+            progress = Progress(
+                SpinnerColumn(style=bar_finished_style),
+                TextColumn("[progress.description]{task.description}"),
+                BarColumn(
+                    style=bar_style,
+                    finished_style=bar_finished_style,
+                    complete_style=bar_complete_style,
+                ),
+                TaskProgressColumn(),
+                TimeElapsedColumn(),
+                console=Console(stderr=True),
+                transient=True,
+            )
+
+            task_id = progress.add_task("[dodger_blue1]Preparing searches...", total=100)
+            progress.start()
+
+            last_percentage = -1
+
+            while True:
+                status_res = ns_con.discovery_status(x_stream_id=x_stream_id)
+                status_data = status_res.get("data", {})
+
+                percentage = status_data.get("percentage", 0) or 0
+                message = status_data.get("message", "Processing")
+                status = (status_data.get("status") or "").lower()
+
+                if percentage != last_percentage:
+                    progress.update(
+                        task_id,
+                        completed=percentage,
+                        description=f"[dodger_blue1]{message}",
+                        refresh=True,
+                    )
+                    last_percentage = percentage
+
+                if status in {"done", "completed", "success", "finished"} or percentage >= 100:
+                    break
+
+                if status in {"failed", "error"}:
+                    progress.stop()
+                    raise APIError(message)
+
+                sleep(0.5)
+
+            progress.update(
+                task_id,
+                completed=100,
+                description="[dodger_blue2]Completed     ",
+                refresh=True,
+            )
+            progress.stop()
 
         print(dump_object(data=query_res["data"], format=format, disable_colors=disable_colors))
     except APIError as ex:
@@ -1187,23 +1255,23 @@ def discovery_searches(apikey, server, format, disable_colors, node_value, node_
     default="domain",
     type=click.Choice(["address", "as_name", "asn", "dns_txt", "domain", "email", "favicon", "http_tracker", "ip", "ip-range", "jarm", "network_name", "organization", "person", "phone", "text"], case_sensitive=False),
     show_default=True,
-    required=True,
 )
-@click.option(
-    "--search-id",
-    "search_id",
-    help="The ID of search type",
-    required=True,
-)
-@click.option(
-    '--node-value',
+@click.argument(
     "node_value",
-    help="Records for fetch",
     required=True,
 )
-
-
-def discovery_fetch(apikey, server, format, disable_colors, search_id, node_value, node_type):
+@click.argument(
+    "search_id",
+    required=True,
+    type=int,
+)
+@click.option(
+    "--disable-status",
+    is_flag=True,
+    default=False,
+    help="Disable progress status output",
+)
+def discovery_fetch(apikey, server, format, disable_colors, node_value, search_id, node_type, disable_status):
     """Execute a search for a node/group and retrieve the corresponding results."""
     try:
         records = [v.strip() for v in node_value.split(",") if v.strip()]
@@ -1211,64 +1279,132 @@ def discovery_fetch(apikey, server, format, disable_colors, search_id, node_valu
 
         if len(records) > 1:
             count_res = ns_con.discovery_group_count(node_type=node_type, node_value=records)
-            count_id = count_res.get("x_count_id")
-            if not count_id:
-                raise APIError("X-Count-Id header was not returned by discovery group count")
-
-            query_res = ns_con.discovery_group_result(x_count_id=count_id, node_type=node_type, node_value=records, search_field_id=search_id)
         else:
             count_res = ns_con.discovery_node_count(node_type=node_type, node_value=node_value)
-            count_id = count_res.get("x_count_id")
-            if not count_id:
-                raise APIError("X-Count-Id header was not returned by discovery node count")
 
-            query_res = ns_con.discovery_node_result(x_count_id=count_id, node_type=node_type, node_value=node_value, search_field_id=search_id)
+        x_count_id = count_res.get("x_count_id")
+        x_stream_id = count_res.get("x_stream_id")
 
-        print(dump_object(data=query_res, format=format, disable_colors=disable_colors))
-    except APIError as ex:
-        print(dump_object(ex))
+        if not x_count_id:
+            raise APIError("X-Count-Id header was not returned by discovery count")
 
+        progress = None
+        task_id = None
 
-@discovery.command("status")
-@click.option(
-    "-a",
-    "--apikey",
-    help="User API key (can be saved to system using command `netlas savekey`)",
-    required=False,
-    default=lambda: get_api_key(),
-)
-@click.option(
-    "-f",
-    "--format",
-    help="Output format",
-    default="yaml",
-    type=click.Choice(["json", "yaml"], case_sensitive=False),
-    show_default=True,
-)
-@click.option(
-    "--server",
-    help="Netlas API server",
-    default="https://app.netlas.io",
-    show_default=True,
-)
-@click.option(
-    "--no-color",
-    "disable_colors",
-    is_flag=True,
-    default=False,
-    help="Disable output colors",
-)
-@click.option(
-    "--stream-id",
-    required=True,
-    help="The unique identifier of a stream used to track the progress."
-)
-def discovery_status(apikey, server, format, disable_colors, stream_id):
-    """Retrieve the current status of an ongoing group search operation."""
-    try:
-        ns_con = netlas.Netlas(api_key=apikey, apibase=server)
-        query_res = ns_con.discovery_status(x_stream_id=stream_id)
-        print(dump_object(data=query_res, format=format, disable_colors=disable_colors))
+        if not disable_status:
+            bar_style = Style(color="bright_white", blink=False, bold=True)
+            bar_complete_style = Style(color="dodger_blue1", blink=False, bold=True)
+            bar_finished_style = Style(color="dodger_blue2", blink=False, bold=True)
+
+            progress = Progress(
+                SpinnerColumn(style=bar_finished_style),
+                TextColumn("[progress.description]{task.description}"),
+                BarColumn(
+                    style=bar_style,
+                    finished_style=bar_finished_style,
+                    complete_style=bar_complete_style,
+                ),
+                TaskProgressColumn(),
+                TimeElapsedColumn(),
+                console=Console(stderr=True),
+                transient=True,
+            )
+
+            task_id = progress.add_task("[dodger_blue1]Preparing search...", total=100)
+            progress.start()
+
+        if x_stream_id and not disable_status:
+            last_percentage = -1
+
+            while True:
+                status_res = ns_con.discovery_status(x_stream_id=x_stream_id)
+                status_data = status_res.get("data", {})
+
+                percentage = status_data.get("percentage", 0) or 0
+                message = status_data.get("message", "Processing")
+                status = (status_data.get("status") or "").lower()
+
+                if percentage != last_percentage:
+                    progress.update(
+                        task_id,
+                        completed=percentage,
+                        description=f"[dodger_blue1]{message}",
+                        refresh=True,
+                    )
+                    last_percentage = percentage
+
+                if status in {"done", "completed", "success", "finished"} or percentage >= 100:
+                    break
+
+                if status in {"failed", "error"}:
+                    progress.stop()
+                    raise APIError(message)
+
+                sleep(0.5)
+
+        if len(records) > 1:
+            result_res = ns_con.discovery_group_result(
+                x_count_id=x_count_id,
+                node_type=node_type,
+                node_value=records,
+                search_field_id=search_id,
+            )
+        else:
+            result_res = ns_con.discovery_node_result(
+                x_count_id=x_count_id,
+                node_type=node_type,
+                node_value=node_value,
+                search_field_id=search_id,
+            )
+
+        x_stream_id = result_res.get("x_stream_id")
+
+        if x_stream_id and not disable_status:
+            progress.update(
+                task_id,
+                completed=0,
+                description="[dodger_blue1]Executing search...",
+                refresh=True,
+            )
+
+            last_percentage = -1
+
+            while True:
+                status_res = ns_con.discovery_status(x_stream_id=x_stream_id)
+                status_data = status_res.get("data", {})
+
+                percentage = status_data.get("percentage", 0) or 0
+                message = status_data.get("message", "Processing")
+                status = (status_data.get("status") or "").lower()
+
+                if percentage != last_percentage:
+                    progress.update(
+                        task_id,
+                        completed=percentage,
+                        description=f"[dodger_blue1]{message}",
+                        refresh=True,
+                    )
+                    last_percentage = percentage
+
+                if status in {"done", "completed", "success", "finished"} or percentage >= 100:
+                    break
+
+                if status in {"failed", "error"}:
+                    progress.stop()
+                    raise APIError(message)
+
+                sleep(0.5)
+
+        if progress is not None:
+            progress.update(
+                task_id,
+                completed=100,
+                description="[dodger_blue2]Completed     ",
+                refresh=True,
+            )
+            progress.stop()
+
+        print(dump_object(data=result_res["data"], format=format, disable_colors=disable_colors))
     except APIError as ex:
         print(dump_object(ex))
 
