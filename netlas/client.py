@@ -5,7 +5,6 @@ import time
 from netlas.exception import APIError, ThrottlingError
 from netlas.helpers import check_status_code
 
-
 class Netlas:
     def __init__(
         self,
@@ -510,7 +509,7 @@ class Netlas:
         ret = self._request(endpoint=endpoint)
         return ret
 
-    def scan_create(self, targets: list[str], name: str):
+    def scan_create(self, targets: list, name: str):
         params = {
             "targets": targets.split(','),
             "name": name
@@ -582,9 +581,10 @@ class Netlas:
         }
         endpoint = "/api/discovery/node_count/"
         resp = self._request(endpoint=endpoint, params=params, method='post', return_headers=True)
-        headers = resp.get("headers", {})
+        headers = {k.lower(): v for k, v in resp.get("headers", {}).items()}
         ret = {
-            "x_count_id": headers.get("X-Count-Id"),
+            "x_count_id": headers.get("x-count-id"),
+            "x_stream_id": headers.get("x-stream-id"),
             "data": resp.get("data"),
         }
         return ret
@@ -599,7 +599,12 @@ class Netlas:
         header = {
             'X-Count-Id': x_count_id
         }
-        ret = self._request(endpoint=endpoint, params=params, method='post', ext_headers=header)
+        resp = self._request(endpoint=endpoint, params=params, method='post', ext_headers=header, return_headers=True)
+        headers = {k.lower(): v for k, v in resp.get("headers", {}).items()}
+        ret = {
+            "x_stream_id": headers.get("x-stream-id"),
+            "data": resp.get("data"),
+        }
         return ret
 
     def discovery_group_count(self, node_type, node_value):
@@ -611,18 +616,14 @@ class Netlas:
             "node_value": node_value,
         }
         endpoint = "/api/discovery/group_of_nodes_count/"
-        resp = self._request(
-            endpoint=endpoint,
-            params=params,
-            method="post",
-            return_headers=True,
-        )
-
+        resp = self._request(endpoint=endpoint, params=params, method="post", return_headers=True)
         headers = {k.lower(): v for k, v in resp.get("headers", {}).items()}
-        return {
+        ret = {
             "x_count_id": headers.get("x-count-id"),
+            "x_stream_id": headers.get("x-stream-id"),
             "data": resp.get("data"),
         }
+        return ret
 
     def discovery_group_result(self, x_count_id, node_type, node_value, search_field_id):
         if isinstance(node_value, str):
@@ -637,15 +638,15 @@ class Netlas:
             "X-Count-Id": x_count_id
         }
         endpoint = "/api/discovery/group_of_nodes_result/"
-        ret = self._request(
-            endpoint=endpoint,
-            params=params,
-            method="post",
-            ext_headers=header,
-        )
+        resp = self._request(endpoint=endpoint, params=params, method="post", ext_headers=header, return_headers=True)
+        headers = {k.lower(): v for k, v in resp.get("headers", {}).items()}
+        ret = {
+            "x_stream_id": headers.get("x-stream-id"),
+            "data": resp.get("data"),
+        }
         return ret
 
     def discovery_status(self, x_stream_id):
-        endpoint = f"/api/discovery/node_count/{x_stream_id}/"
+        endpoint = f"/api/discovery/status/{x_stream_id}/"
         ret = self._request(endpoint=endpoint)
         return ret
